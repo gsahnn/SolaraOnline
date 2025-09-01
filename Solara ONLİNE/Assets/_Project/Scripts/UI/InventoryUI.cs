@@ -14,7 +14,7 @@ public class InventoryUI : MonoBehaviour
     private void Start()
     {
         // Oyuncunun envanterini bul ve event'ine abone ol.
-        playerInventory = FindObjectOfType<PlayerInventory>();
+        playerInventory = FindFirstObjectByType<PlayerInventory>();
         playerInventory.inventory.OnInventorySlotChanged += UpdateSlotUI;
 
         // Baþlangýçta envanteri kapalý tut.

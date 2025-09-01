@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3016c38e2587c924890954e60e71948d, type: 3}
+  m_Name: "Basit K\u0131l\u0131\xE7"
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponData
+  itemName: 
+  icon: {fileID: 0}
+  description: 
+  isStackable: 0
+  maxStackSize: 1
+  bonusHealth: 0
+  bonusMana: 0
+  bonusStrength: 0
+  bonusDefense: 0
+  minDamage: 0
+  maxDamage: 0
