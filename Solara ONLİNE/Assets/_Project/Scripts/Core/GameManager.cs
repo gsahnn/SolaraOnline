@@ -1,7 +1,7 @@
 // GameManager.cs
-using UnityEngine;
 using System; // Event'ler için bu kütüphane gerekli.
-
+using UnityEngine;
+using UnityEngine.SceneManagement;
 public class GameManager : MonoBehaviour
 {
     // --- SINGLETON PATTERN ---
@@ -38,6 +38,13 @@ public class GameManager : MonoBehaviour
 
         // Bu GameManager'ýn sahneler arasýnda geçiþ yapsak bile yok olmamasýný saðlar.
         DontDestroyOnLoad(gameObject);
+    }
+    private void Start()
+    {
+        // NOT: Build Settings'e sahneleri eklediðimizden emin olmalýyýz!
+        // Ýlk oyun sahnesini (örneðin ana menü veya ilk harita) yükle.
+        // "LoadSceneMode.Additive" sayesinde mevcut sahnenin (Manager_Scene) üzerine ekler.
+        SceneManager.LoadScene("Test_EþyaToplama", LoadSceneMode.Additive);
     }
     // ---------------------------
 

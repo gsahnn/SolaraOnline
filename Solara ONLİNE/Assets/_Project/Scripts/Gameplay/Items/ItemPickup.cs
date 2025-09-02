@@ -3,11 +3,17 @@ using UnityEngine;
 
 public class ItemPickup : MonoBehaviour
 {
-    [SerializeField] private ItemData itemData; // Bu obje hangi eþyanýn verisini taþýyor?
-    [SerializeField] private int amount = 1;    // Bu eþyadan kaç adet var?
+    [SerializeField] private ItemData itemData;
+    [SerializeField] private int amount = 1;
 
-    // OnTriggerEnter fonksiyonu, bir Collider'ýn "Is Trigger" iþaretli baþka bir Collider'a
-    // girdiði anda otomatik olarak çalýþýr.
+    // YENÝ FONKSÝYON: Bu fonksiyon, obje yaratýldýktan sonra çaðrýlarak
+    // içindeki eþya verisini ayarlamamýzý saðlar.
+    public void Initialize(ItemData item, int pickupAmount)
+    {
+        this.itemData = item;
+        this.amount = pickupAmount;
+    }
+
     private void OnTriggerEnter(Collider other)
     {
         // Objeye temas edenin bir "PlayerInventory" bileþeni var mý diye kontrol et.
