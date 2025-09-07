@@ -2,37 +2,45 @@
 using UnityEngine;
 
 [RequireComponent(typeof(CharacterController))]
-[RequireComponent(typeof(Animator))] // Animator bileþenini de zorunlu hale getirelim.
+[RequireComponent(typeof(Animator))]
+[RequireComponent(typeof(CharacterStats))]
 public class PlayerController : MonoBehaviour
 {
     [Header("Hareket Ayarlarý")]
     [SerializeField] private float moveSpeed = 5f;
 
-    [Header("Savaþ Ayarlarý")]
-    [SerializeField] private int attackDamage = 50;
-    //[SerializeField] private GameObject hitEffectPrefab; // Ýleride vuruþ efekti eklemek için (þimdilik kapalý)
-    //[SerializeField] private AudioClip swordSwingSound; // Kýlýç savurma sesi için (þimdilik kapalý)
-    //[SerializeField] private AudioClip hitSound;      // Vuruþ sesi için (þimdilik kapalý)
-
     // Bileþen Referanslarý
     private CharacterController controller;
     private Animator animator;
     private Camera mainCamera;
+    private CharacterStats myStats;
 
     // Savaþ Durum Deðiþkeni
-    private MonsterController currentTarget; // O anki saldýrý hedefimiz
+    private MonsterController currentTarget; // Hedef hala MonsterController tipinde
 
     private void Start()
     {
-        // Gerekli bileþenlere referanslarý oyun baþýnda bir kere alýyoruz. Bu performans için önemlidir.
+        // Bileþen referanslarýný al.
         controller = GetComponent<CharacterController>();
         animator = GetComponent<Animator>();
+        myStats = GetComponent<CharacterStats>();
         mainCamera = Camera.main;
+
+        // HUD kontrolcüsünü bul ve kendini ona tanýt.
+        PlayerHUD_Controller hud = FindFirstObjectByType<PlayerHUD_Controller>();
+        if (hud != null)
+        {
+            hud.InitializeHUD(myStats);
+        }
+        else
+        {
+            // Eðer HUD bulunamazsa, bu önemli bir hatadýr. Konsolda belirtelim.
+            Debug.LogError("Sahnede PlayerHUD_Controller bulunamadý! Manager_Scene'i kontrol et.");
+        }
     }
 
     private void Update()
     {
-        // Her frame'de hareketi ve saldýrý giriþini kontrol et.
         HandleMovement();
         HandleAttackInput();
     }
@@ -41,12 +49,9 @@ public class PlayerController : MonoBehaviour
     {
         float horizontal = Input.GetAxis("Horizontal");
         float vertical = Input.GetAxis("Vertical");
-        Vector3 moveDirection = new Vector3(horizontal, 0, vertical).normalized; // normalized, çapraz giderken hýzlanmayý önler.
+        Vector3 moveDirection = new Vector3(horizontal, 0, vertical).normalized;
 
         controller.Move(moveDirection * moveSpeed * Time.deltaTime);
-
-        // Karakterin yürüdüðünü veya durduðunu animatöre bildiriyoruz.
-        // Hýzýn büyüklüðü (magnitude) 0'dan büyükse karakter hareket ediyor demektir.
         animator.SetBool("IsMoving", moveDirection.magnitude > 0.1f);
 
         if (moveDirection != Vector3.zero)
@@ -57,17 +62,13 @@ public class PlayerController : MonoBehaviour
 
     private void HandleAttackInput()
     {
-        // Fareye týklandýysa VE karakter zaten saldýrmýyorsa...
-        // "isAttacking" kontrolü, animasyon bitmeden tekrar tekrar saldýrmayý engeller.
         if (Input.GetMouseButtonDown(0) && !animator.GetCurrentAnimatorStateInfo(0).IsName("Attack"))
         {
             Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out RaycastHit hit, 100f))
             {
-                // Bir canavara mý týkladýk?
                 if (hit.collider.TryGetComponent(out MonsterController monster))
                 {
-                    // Saldýrýyý baþlat
                     StartAttack(monster);
                 }
             }
@@ -76,34 +77,25 @@ public class PlayerController : MonoBehaviour
 
     private void StartAttack(MonsterController target)
     {
-        // Hedefi ve hedefin yönünü sakla
         currentTarget = target;
         transform.LookAt(target.transform.position);
-
-        // Animatör'deki "Attack" trigger'ýný ateþle.
         animator.SetTrigger("Attack");
-
-        // Kýlýç savurma sesini burada oynatabiliriz (ileride eklenecek).
-        // AudioSource.PlayOneShot(swordSwingSound);
     }
 
-    // !!! ÖNEMLÝ !!!
-    // BU FONKSÝYON, KOD ÝÇÝNDEN DEÐÝL, DOÐRUDAN ANÝMASYONUN KENDÝSÝ TARAFINDAN ÇAÐRILACAKTIR.
-    // Bu yüzden public olmalý.
+    // Animasyon Event'i tarafýndan çaðrýlacak olan fonksiyon (DÜZELTÝLDÝ).
     public void AnimationEvent_DealDamage()
     {
-        // Eðer bir hedefimiz varsa (saldýrý iptal edilmediyse)...
-        if (currentTarget != null)
+        // Hedefimiz hala var mý ve hedefin bir CharacterStats bileþeni var mý?
+        if (currentTarget != null && currentTarget.TryGetComponent(out CharacterStats targetStats))
         {
-            // Vuruþ efektini ve sesini burada oluþtur/oynat.
-            // Instantiate(hitEffectPrefab, currentTarget.transform.position, Quaternion.identity);
-            // AudioSource.PlayOneShot(hitSound);
+            // Rastgele bir hasar deðeri hesapla
+            int damage = Random.Range(myStats.minDamage, myStats.maxDamage + 1);
 
-            // Hedefe hasar ver.
-            currentTarget.TakeDamage(attackDamage);
-
-            // Bu vuruþ için hedefle iþimiz bitti, bir sonraki saldýrýya kadar temizleyelim.
-            currentTarget = null;
+            // Hedefin CharacterStats bileþenindeki TakeDamage fonksiyonunu çaðýr.
+            // Saldýranýn kim olduðunu da (bizim statlarýmýzý) parametre olarak gönder.
+            targetStats.TakeDamage(damage, myStats);
         }
+
+        currentTarget = null;
     }
 }
