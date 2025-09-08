@@ -1,5 +1,6 @@
-// PlayerController.cs
+// PlayerController.cs (SON HALÝ - KOPYALA YAPIÞTIR)
 using UnityEngine;
+using System.Collections;
 
 [RequireComponent(typeof(CharacterController))]
 [RequireComponent(typeof(Animator))]
@@ -9,55 +10,36 @@ public class PlayerController : MonoBehaviour
     [Header("Hareket Ayarlarý")]
     [SerializeField] private float moveSpeed = 5f;
 
-    [Header("Arayüz Referanslarý")]
-    [SerializeField] private GameObject statsPanel; // Inspector'dan CharacterStats_Panel'i buraya sürükle
-
-    // Bileþen Referanslarý
     private CharacterController controller;
     private Animator animator;
     private Camera mainCamera;
     private CharacterStats myStats;
-
-    // Savaþ Durum Deðiþkeni
     private MonsterController currentTarget;
 
     private void Start()
     {
-        // Gerekli bileþenlere referanslarý oyun baþýnda bir kere alýyoruz.
         controller = GetComponent<CharacterController>();
         animator = GetComponent<Animator>();
         myStats = GetComponent<CharacterStats>();
         mainCamera = Camera.main;
+        StartCoroutine(InitializeUIRoutine());
+    }
 
-        // --- ARAYÜZ BAÐLANTILARI ---
-        // Sahnede var olan UI kontrolcülerini bulup, onlara bu karakterin statlarýný dinlemelerini söylüyoruz.
+    private IEnumerator InitializeUIRoutine()
+    {
+        yield return null;
 
-        // 1. Oyuncu HUD'ýný (Can/Mana Barlarý) bul ve initialize et.
         PlayerHUD_Controller hud = FindFirstObjectByType<PlayerHUD_Controller>();
-        if (hud != null)
+        if (hud != null) hud.InitializeHUD(myStats);
+        else Debug.LogError("PlayerHUD_Controller bulunamadý!");
+
+        if (CharacterStatsUI_Controller.Instance != null)
         {
-            hud.InitializeHUD(myStats);
+            CharacterStatsUI_Controller.Instance.Initialize(myStats);
         }
         else
         {
-            Debug.LogError("Sahnede PlayerHUD_Controller bulunamadý! Manager_Scene'i kontrol et.");
-        }
-
-        // 2. Karakter Statü Panelini bul ve initialize et.
-        CharacterStatsUI_Controller statsUI = FindFirstObjectByType<CharacterStatsUI_Controller>();
-        if (statsUI != null)
-        {
-            statsUI.Initialize(myStats);
-        }
-        else
-        {
-            Debug.LogError("Sahnede CharacterStatsUI_Controller bulunamadý! Manager_Scene'i kontrol et.");
-        }
-
-        // Baþlangýçta stat panelinin kapalý olduðundan emin ol.
-        if (statsPanel != null)
-        {
-            statsPanel.SetActive(false);
+            Debug.LogError("CharacterStatsUI_Controller.Instance bulunamadý!");
         }
     }
 
@@ -65,7 +47,7 @@ public class PlayerController : MonoBehaviour
     {
         HandleMovement();
         HandleAttackInput();
-        HandleUIInput(); // UI için olan giriþleri ayrý bir fonksiyonda toplamak daha temizdir.
+        HandleUIInput();
     }
 
     private void HandleMovement()
@@ -83,10 +65,20 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    private void HandleUIInput()
+    {
+        if (Input.GetKeyDown(KeyCode.C))
+        {
+            if (CharacterStatsUI_Controller.Instance != null)
+            {
+                CharacterStatsUI_Controller.Instance.TogglePanel();
+            }
+        }
+    }
+
     private void HandleAttackInput()
     {
-        // Envanter veya stat paneli gibi bir UI açýkken saldýrmayý engellemek iyi bir fikirdir.
-        if (statsPanel != null && statsPanel.activeSelf) return;
+        if (CharacterStatsUI_Controller.Instance != null && CharacterStatsUI_Controller.Instance.IsOpen()) return;
 
         if (Input.GetMouseButtonDown(0) && !animator.GetCurrentAnimatorStateInfo(0).IsName("Attack"))
         {
@@ -97,19 +89,6 @@ public class PlayerController : MonoBehaviour
                 {
                     StartAttack(monster);
                 }
-            }
-        }
-    }
-
-    // UI ile ilgili klavye giriþlerini bu fonksiyonda topluyoruz.
-    private void HandleUIInput()
-    {
-        // 'C' tuþuna basýldýðýnda Stat Panelini aç/kapat.
-        if (Input.GetKeyDown(KeyCode.C))
-        {
-            if (statsPanel != null)
-            {
-                statsPanel.SetActive(!statsPanel.activeSelf);
             }
         }
     }
