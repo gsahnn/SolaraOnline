@@ -155,7 +155,7 @@ Camera:
   m_GameObject: {fileID: 330585543}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 1
+  m_ClearFlags: 4
   m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
@@ -164,7 +164,7 @@ Camera:
   m_ShutterSpeed: 0.005
   m_Aperture: 16
   m_FocusDistance: 10
-  m_FocalLength: 50
+  m_FocalLength: 30.937845
   m_BladeCount: 5
   m_Curvature: {x: 2, y: 11}
   m_BarrelClipping: 0.25
@@ -179,7 +179,7 @@ Camera:
     height: 1
   near clip plane: 0.3
   far clip plane: 1000
-  field of view: 60
+  field of view: 42.4
   orthographic: 0
   orthographic size: 5
   m_Depth: -1
@@ -206,7 +206,7 @@ Transform:
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalPosition: {x: 1, y: 1, z: -5.59}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -662,6 +662,7 @@ GameObject:
   - component: {fileID: 620199965}
   - component: {fileID: 620199967}
   - component: {fileID: 620199966}
+  - component: {fileID: 620199968}
   m_Layer: 5
   m_Name: CharacterStats_Panel
   m_TagString: Untagged
@@ -736,6 +737,30 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 620199964}
   m_CullTransparentMesh: 1
+--- !u!114 &620199968
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 620199964}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 974496e8390f6154a8f8101611b3c89d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterStatsUI_Controller
+  characterStatsPanel: {fileID: 620199964}
+  hpText: {fileID: 740422591}
+  mpText: {fileID: 876689645}
+  strText: {fileID: 1399950280}
+  vitText: {fileID: 1828954795}
+  dexText: {fileID: 1888942399}
+  intText: {fileID: 1262676958}
+  pointsText: {fileID: 1450068934}
+  strButton: {fileID: 827426222}
+  vitButton: {fileID: 1989319192}
+  dexButton: {fileID: 2100090063}
+  intButton: {fileID: 1696400706}
 --- !u!1 &625727846
 GameObject:
   m_ObjectHideFlags: 0
@@ -1270,7 +1295,7 @@ GameObject:
   - component: {fileID: 827426225}
   - component: {fileID: 827426224}
   m_Layer: 5
-  m_Name: Button
+  m_Name: STR
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1339,7 +1364,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 827426225}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 620199968}
+        m_TargetAssemblyTypeName: CharacterStatsUI_Controller, Assembly-CSharp
+        m_MethodName: OnAssignStr
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &827426225
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1918,6 +1955,42 @@ PrefabInstance:
       propertyPath: statsPanel
       value: 
       objectReference: {fileID: 620199964}
+    - target: {fileID: 3147732011362943933, guid: 7eb0535cb13d99b48ba1711be90de80a, type: 3}
+      propertyPath: defense
+      value: 15
+      objectReference: {fileID: 0}
+    - target: {fileID: 3147732011362943933, guid: 7eb0535cb13d99b48ba1711be90de80a, type: 3}
+      propertyPath: maxMana
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 3147732011362943933, guid: 7eb0535cb13d99b48ba1711be90de80a, type: 3}
+      propertyPath: maxDamage
+      value: 25
+      objectReference: {fileID: 0}
+    - target: {fileID: 3147732011362943933, guid: 7eb0535cb13d99b48ba1711be90de80a, type: 3}
+      propertyPath: maxHealth
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 3147732011362943933, guid: 7eb0535cb13d99b48ba1711be90de80a, type: 3}
+      propertyPath: minDamage
+      value: 13
+      objectReference: {fileID: 0}
+    - target: {fileID: 3147732011362943933, guid: 7eb0535cb13d99b48ba1711be90de80a, type: 3}
+      propertyPath: currentMana
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 3147732011362943933, guid: 7eb0535cb13d99b48ba1711be90de80a, type: 3}
+      propertyPath: currentHealth
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 3147732011362943933, guid: 7eb0535cb13d99b48ba1711be90de80a, type: 3}
+      propertyPath: expToNextLevel
+      value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 3147732011362943933, guid: 7eb0535cb13d99b48ba1711be90de80a, type: 3}
+      propertyPath: statPointsToAssign
+      value: 5
+      objectReference: {fileID: 0}
     - target: {fileID: 3310600923399589342, guid: 7eb0535cb13d99b48ba1711be90de80a, type: 3}
       propertyPath: itemIcon
       value: 
@@ -2229,7 +2302,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "PO\u0130NT"
+  m_text: POINT
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -2748,7 +2821,7 @@ GameObject:
   - component: {fileID: 1696400709}
   - component: {fileID: 1696400708}
   m_Layer: 5
-  m_Name: Button
+  m_Name: INT
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2817,7 +2890,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1696400709}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 620199968}
+        m_TargetAssemblyTypeName: CharacterStatsUI_Controller, Assembly-CSharp
+        m_MethodName: OnAssignInt
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1696400709
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4149,7 +4234,7 @@ GameObject:
   - component: {fileID: 1989319195}
   - component: {fileID: 1989319194}
   m_Layer: 5
-  m_Name: Button
+  m_Name: VIT
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4218,7 +4303,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1989319195}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 620199968}
+        m_TargetAssemblyTypeName: CharacterStatsUI_Controller, Assembly-CSharp
+        m_MethodName: OnAssignVit
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1989319195
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4270,7 +4367,7 @@ GameObject:
   - component: {fileID: 2100090066}
   - component: {fileID: 2100090065}
   m_Layer: 5
-  m_Name: Button
+  m_Name: DEX
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4339,7 +4436,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2100090066}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 620199968}
+        m_TargetAssemblyTypeName: CharacterStatsUI_Controller, Assembly-CSharp
+        m_MethodName: OnAssignDex
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &2100090066
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -1,4 +1,3 @@
-// MonsterController.cs
 using UnityEngine;
 
 [RequireComponent(typeof(CharacterStats))]
@@ -15,7 +14,6 @@ public class MonsterController : MonoBehaviour
         {
             killer.AddExperience(experienceGranted);
         }
-
         DropLoot();
         Destroy(gameObject);
     }
@@ -23,7 +21,6 @@ public class MonsterController : MonoBehaviour
     private void DropLoot()
     {
         if (lootTable == null) return;
-
         foreach (var lootItem in lootTable.possibleLoot)
         {
             float randomChance = Random.Range(0f, 100f);

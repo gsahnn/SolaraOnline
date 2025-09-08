@@ -1,4 +1,3 @@
-// CharacterStats.cs
 using UnityEngine;
 using System;
 
@@ -49,13 +48,10 @@ public class CharacterStats : MonoBehaviour
     public void AddExperience(int amount)
     {
         currentExp += amount;
-        Debug.Log(transform.name + " " + amount + " EXP kazandý.");
-
         while (currentExp >= expToNextLevel)
         {
             LevelUp();
         }
-
         OnStatsChanged?.Invoke();
     }
 
@@ -64,15 +60,10 @@ public class CharacterStats : MonoBehaviour
         level++;
         currentExp -= expToNextLevel;
         expToNextLevel = Mathf.RoundToInt(expToNextLevel * 1.5f);
-
-        vitality += 2;
-        strength += 2;
-
+        statPointsToAssign += 5;
         CalculateAllStats();
         currentHealth = maxHealth;
         currentMana = maxMana;
-        statPointsToAssign += 5;
-
         Debug.Log(transform.name + " SEVÝYE ATLADI! Yeni seviye: " + level);
     }
 
@@ -80,8 +71,6 @@ public class CharacterStats : MonoBehaviour
     {
         int damageTaken = Mathf.Max(damage - defense, 1);
         currentHealth -= damageTaken;
-
-        Debug.Log(transform.name + ", " + attacker.name + "'dan " + damageTaken + " hasar aldý. Kalan can: " + currentHealth);
         OnStatsChanged?.Invoke();
 
         if (currentHealth <= 0)
@@ -93,8 +82,6 @@ public class CharacterStats : MonoBehaviour
 
     private void Die(CharacterStats killer)
     {
-        Debug.Log(transform.name + " öldü.");
-
         if (TryGetComponent(out MonsterController monster))
         {
             monster.HandleDeath(killer);
@@ -104,6 +91,7 @@ public class CharacterStats : MonoBehaviour
             Debug.Log("OYUNCU ÖLDÜ!");
         }
     }
+
     public void AssignStatPoint(string statName)
     {
         if (statPointsToAssign > 0)
@@ -116,7 +104,7 @@ public class CharacterStats : MonoBehaviour
                 case "VIT": vitality++; break;
                 case "INT": intelligence++; break;
             }
-            CalculateAllStats(); // Statlar deðiþtiði için her þeyi yeniden hesapla
+            CalculateAllStats();
         }
     }
 }

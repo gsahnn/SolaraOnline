@@ -1,10 +1,11 @@
-// PlayerController.cs (SON HALÝ - KOPYALA YAPIÞTIR)
+// PlayerController.cs (SON HALÝ - ARAMA YOK, SADECE KOMUT VAR)
 using UnityEngine;
 using System.Collections;
 
 [RequireComponent(typeof(CharacterController))]
 [RequireComponent(typeof(Animator))]
 [RequireComponent(typeof(CharacterStats))]
+[RequireComponent(typeof(SkillHolder))]
 public class PlayerController : MonoBehaviour
 {
     [Header("Hareket Ayarlarý")]
@@ -14,6 +15,7 @@ public class PlayerController : MonoBehaviour
     private Animator animator;
     private Camera mainCamera;
     private CharacterStats myStats;
+    private SkillHolder skillHolder;
     private MonsterController currentTarget;
 
     private void Start()
@@ -21,26 +23,38 @@ public class PlayerController : MonoBehaviour
         controller = GetComponent<CharacterController>();
         animator = GetComponent<Animator>();
         myStats = GetComponent<CharacterStats>();
+        skillHolder = GetComponent<SkillHolder>();
         mainCamera = Camera.main;
-        StartCoroutine(InitializeUIRoutine());
-    }
 
-    private IEnumerator InitializeUIRoutine()
-    {
-        yield return null;
+        // Oyuncu sahneye geldiðinde, tüm UI Yöneticilerine kendisini tanýtýr.
+        InitializeUserInterfaces();
 
-        PlayerHUD_Controller hud = FindFirstObjectByType<PlayerHUD_Controller>();
-        if (hud != null) hud.InitializeHUD(myStats);
-        else Debug.LogError("PlayerHUD_Controller bulunamadý!");
-
-        if (CharacterStatsUI_Controller.Instance != null)
+        // TEST AMAÇLI YETENEK EKLEME
+        SkillData testSkill = Resources.Load<SkillData>("Data/Skills/Güçlü Vuruþ");
+        if (testSkill != null)
         {
-            CharacterStatsUI_Controller.Instance.Initialize(myStats);
+            skillHolder.LearnSkill(testSkill);
         }
         else
         {
-            Debug.LogError("CharacterStatsUI_Controller.Instance bulunamadý!");
+            Debug.LogError("'Güçlü Vuruþ' yeteneði 'Resources/Data/Skills' klasöründe bulunamadý!");
         }
+    }
+
+    // Oyuncunun varlýðýný UI sistemlerine bildiren fonksiyon
+    private void InitializeUserInterfaces()
+    {
+        if (PlayerHUD_Controller.Instance != null)
+            PlayerHUD_Controller.Instance.InitializeHUD(myStats);
+        else Debug.LogError("PlayerHUD_Controller.Instance bulunamadý!");
+
+        if (CharacterStatsUI_Controller.Instance != null)
+            CharacterStatsUI_Controller.Instance.Initialize(myStats);
+        else Debug.LogError("CharacterStatsUI_Controller.Instance bulunamadý!");
+
+        if (SkillBar_Controller.Instance != null)
+            SkillBar_Controller.Instance.Initialize(skillHolder);
+        else Debug.LogError("SkillBar_Controller.Instance bulunamadý!");
     }
 
     private void Update()
@@ -48,8 +62,36 @@ public class PlayerController : MonoBehaviour
         HandleMovement();
         HandleAttackInput();
         HandleUIInput();
+        HandleSkillInput();
     }
 
+    // ... HandleMovement, HandleUIInput, HandleAttackInput, StartAttack, AnimationEvent_DealDamage...
+    // ... BU FONKSÝYONLARIN HEPSÝ AYNI KALIYOR ...
+    // ... Sadece HandleSkillInput'ý güncelleyelim ...
+
+    private void HandleSkillInput()
+    {
+        if (CharacterStatsUI_Controller.Instance != null && CharacterStatsUI_Controller.Instance.IsOpen()) return;
+
+        if (Input.GetKeyDown(KeyCode.Alpha1)) { AttemptToUseSkill(0); }
+        if (Input.GetKeyDown(KeyCode.Alpha2)) { AttemptToUseSkill(1); }
+        if (Input.GetKeyDown(KeyCode.Alpha3)) { AttemptToUseSkill(2); }
+    }
+
+    private void AttemptToUseSkill(int skillIndex)
+    {
+        Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+        if (Physics.Raycast(ray, out RaycastHit hit, 100f))
+        {
+            if (hit.collider.TryGetComponent(out MonsterController monster))
+            {
+                transform.LookAt(monster.transform); // Yetenek kullanmadan önce hedefe dön.
+                skillHolder.UseSkill(skillIndex, monster);
+            }
+        }
+    }
+
+    // Deðiþmeyen diðer fonksiyonlar
     private void HandleMovement()
     {
         float horizontal = Input.GetAxis("Horizontal");
