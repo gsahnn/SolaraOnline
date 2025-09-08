@@ -8,6 +8,7 @@ public class CharacterStats : MonoBehaviour
     public int level = 1;
     public int currentExp = 0;
     public int expToNextLevel = 100;
+    public int statPointsToAssign = 0;
 
     [Header("Ana Statlar")]
     public int strength = 10;
@@ -70,6 +71,7 @@ public class CharacterStats : MonoBehaviour
         CalculateAllStats();
         currentHealth = maxHealth;
         currentMana = maxMana;
+        statPointsToAssign += 5;
 
         Debug.Log(transform.name + " SEVÝYE ATLADI! Yeni seviye: " + level);
     }
@@ -100,6 +102,21 @@ public class CharacterStats : MonoBehaviour
         else if (TryGetComponent(out PlayerController player))
         {
             Debug.Log("OYUNCU ÖLDÜ!");
+        }
+    }
+    public void AssignStatPoint(string statName)
+    {
+        if (statPointsToAssign > 0)
+        {
+            statPointsToAssign--;
+            switch (statName.ToUpper())
+            {
+                case "STR": strength++; break;
+                case "DEX": dexterity++; break;
+                case "VIT": vitality++; break;
+                case "INT": intelligence++; break;
+            }
+            CalculateAllStats(); // Statlar deðiþtiði için her þeyi yeniden hesapla
         }
     }
 }
