@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: "Basit K\u0131l\u0131\xE7"
   m_EditorClassIdentifier: Assembly-CSharp::WeaponData
   itemName: 
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 61e9e2ae792c72e4ca47cc15f20e4128, type: 3}
   description: 
   isStackable: 0
   maxStackSize: 1

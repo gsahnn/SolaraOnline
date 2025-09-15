@@ -2282,6 +2282,10 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 6
       objectReference: {fileID: 0}
+    - target: {fileID: 2326761710741592838, guid: 745ee9a1c375e494dadb2459a29b30ca, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 8a8cc8c91919a3241bce42772acf5f13, type: 2}
     - target: {fileID: 2551591673938804809, guid: 745ee9a1c375e494dadb2459a29b30ca, type: 3}
       propertyPath: m_Layer
       value: 6
@@ -3222,7 +3226,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 0.89411765}
+  m_Color: {r: 0.3773585, g: 0.3773585, b: 0.3773585, a: 0.89411765}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
