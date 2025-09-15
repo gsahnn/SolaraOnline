@@ -1,10 +1,17 @@
-// PlayerInteraction.cs
 using UnityEngine;
 
 public class PlayerInteraction : MonoBehaviour
 {
-    [SerializeField] private float interactionDistance = 2f;
+    [SerializeField] private float interactionDistance = 3f;
+    [SerializeField] private LayerMask interactableLayer; // Sadece NPC gibi objeleri algýlamak için.
+
     private Interactable currentInteractable;
+    private Camera mainCamera;
+
+    private void Start()
+    {
+        mainCamera = Camera.main;
+    }
 
     void Update()
     {
@@ -18,30 +25,25 @@ public class PlayerInteraction : MonoBehaviour
 
     void CheckForInteractable()
     {
-        RaycastHit hit;
-        // Karakterin tam önündeki objeyi kontrol et
-        if (Physics.Raycast(transform.position + Vector3.up * 0.5f, transform.forward, out hit, interactionDistance))
+        Ray ray = new Ray(mainCamera.transform.position, mainCamera.transform.forward);
+
+        if (Physics.Raycast(ray, out RaycastHit hit, interactionDistance, interactableLayer))
         {
             if (hit.collider.TryGetComponent(out Interactable interactable))
             {
-                // Eðer yeni bir obje bulduysak ve bu önceki deðilse...
                 if (interactable != currentInteractable)
                 {
-                    // Eski objenin yazýsýný gizle (eðer varsa)
-                    if (currentInteractable != null) currentInteractable.ShowPrompt(false);
-
-                    // Yeni objeyi ata ve yazýsýný göster.
+                    if (currentInteractable != null) currentInteractable.HidePrompt();
                     currentInteractable = interactable;
-                    currentInteractable.ShowPrompt(true);
+                    currentInteractable.ShowPrompt();
                 }
-                return; // Bir obje bulduk, devam etmeye gerek yok.
+                return;
             }
         }
 
-        // Eðer ýþýn hiçbir þeye çarpmadýysa veya çarptýðý þey Interactable deðilse...
         if (currentInteractable != null)
         {
-            currentInteractable.ShowPrompt(false);
+            currentInteractable.HidePrompt();
             currentInteractable = null;
         }
     }

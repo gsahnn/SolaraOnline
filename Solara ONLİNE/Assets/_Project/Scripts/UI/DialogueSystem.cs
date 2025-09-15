@@ -1,6 +1,6 @@
-// DialogueSystem.cs
 using UnityEngine;
 using TMPro;
+using UnityEngine.UI;
 
 public class DialogueSystem : MonoBehaviour
 {
@@ -8,24 +8,26 @@ public class DialogueSystem : MonoBehaviour
 
     [SerializeField] private GameObject dialoguePanel;
     [SerializeField] private TextMeshProUGUI dialogueText;
+    [SerializeField] private Button closeButton; // Kapatma butonu referansý
 
     private void Awake()
     {
         if (Instance != null) { Destroy(gameObject); } else { Instance = this; }
+    }
+
+    private void Start()
+    {
+        // Butona týklandýðýnda CloseDialogue fonksiyonunu çaðýrmasý için bir listener ekle.
+        closeButton.onClick.AddListener(CloseDialogue);
         dialoguePanel.SetActive(false);
     }
 
-    public void ShowDialogue(string[] sentences)
+    public void ShowDialogue(string sentence) // Sadece tek bir cümle alacak þekilde basitleþtirelim.
     {
-        // Þimdilik sadece ilk cümleyi gösterelim.
-        if (sentences.Length > 0)
-        {
-            dialoguePanel.SetActive(true);
-            dialogueText.text = sentences[0];
-        }
+        dialoguePanel.SetActive(true);
+        dialogueText.text = sentence;
     }
 
-    // Diyalog penceresini kapatmak için (bir butona baðlanabilir)
     public void CloseDialogue()
     {
         dialoguePanel.SetActive(false);
