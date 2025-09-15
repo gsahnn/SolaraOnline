@@ -1,4 +1,3 @@
-// SkillHolder.cs
 using UnityEngine;
 using System.Collections.Generic;
 using System;
@@ -37,13 +36,9 @@ public class SkillSlot
 
 public class SkillHolder : MonoBehaviour
 {
-    // Oyuncunun sahip olduðu tüm yetenek slotlarý.
     public List<SkillSlot> skills = new List<SkillSlot>();
-
-    // Yeteneklerin bekleme sürelerini güncellemek için event. UI bunu dinleyecek.
     public event Action OnSkillsUpdated;
 
-    // Referanslar
     private CharacterStats myStats;
 
     private void Awake()
@@ -53,7 +48,6 @@ public class SkillHolder : MonoBehaviour
 
     private void Update()
     {
-        // Her frame'de tüm yeteneklerin bekleme sürelerini azalt.
         bool cooldownUpdated = false;
         foreach (var skill in skills)
         {
@@ -64,7 +58,6 @@ public class SkillHolder : MonoBehaviour
             }
         }
 
-        // Eðer en az bir yeteneðin süresi azaldýysa, UI'a haber ver.
         if (cooldownUpdated)
         {
             OnSkillsUpdated?.Invoke();
@@ -74,9 +67,12 @@ public class SkillHolder : MonoBehaviour
     // Yeni bir yetenek öðrenmek için fonksiyon.
     public void LearnSkill(SkillData skillData)
     {
-        if (skillData != null)
+        // Ayný yeteneðin zaten öðrenilip öðrenilmediðini kontrol et
+        if (skillData != null && !skills.Exists(s => s.skillData == skillData))
         {
             skills.Add(new SkillSlot(skillData));
+
+            // ÖNEMLÝ DEÐÝÞÝKLÝK: Yeni bir yetenek eklendiðinde UI'a anýnda haber veriyoruz.
             OnSkillsUpdated?.Invoke();
         }
     }
@@ -84,12 +80,10 @@ public class SkillHolder : MonoBehaviour
     // Yeteneði kullanmaya çalýþ.
     public void UseSkill(int skillIndex, MonsterController target)
     {
-        // Geçerli bir yetenek mi?
         if (skillIndex < 0 || skillIndex >= skills.Count) return;
 
         SkillSlot skillSlot = skills[skillIndex];
 
-        // Bekleme süresinde mi? Manamýz yeterli mi?
         if (skillSlot.IsOnCooldown())
         {
             Debug.Log(skillSlot.skillData.skillName + " bekleme süresinde!");
@@ -102,20 +96,19 @@ public class SkillHolder : MonoBehaviour
             return;
         }
 
-        // Tüm kontrollerden geçti. Yeteneði kullan!
         myStats.currentMana -= skillSlot.skillData.manaCost;
         skillSlot.PutOnCooldown();
 
         Debug.Log(skillSlot.skillData.skillName + " kullanýldý!");
 
-        // Yeteneðin etkisini uygula (þimdilik sadece hasar)
         if (skillSlot.skillData.type == SkillType.Damage)
         {
             if (target != null && target.TryGetComponent(out CharacterStats targetStats))
             {
                 int baseDamage = skillSlot.skillData.baseDamage;
                 float multiplier = skillSlot.skillData.damageMultiplier;
-                int finalDamage = baseDamage + Mathf.RoundToInt(myStats.intelligence * multiplier); // Büyü hasarý INT'e baðlý olsun.
+                // Yetenek hasarý Zeka'ya (INT) baðlý olsun.
+                int finalDamage = baseDamage + Mathf.RoundToInt(myStats.intelligence * multiplier);
 
                 targetStats.TakeDamage(finalDamage, myStats);
             }

@@ -1,4 +1,3 @@
-// PlayerController.cs (SON HALÝ - ARAMA YOK, SADECE KOMUT VAR)
 using UnityEngine;
 using System.Collections;
 
@@ -18,32 +17,45 @@ public class PlayerController : MonoBehaviour
     private SkillHolder skillHolder;
     private MonsterController currentTarget;
 
-    private void Start()
+    private void Awake()
     {
+        // Referanslarý Awake içinde almak, Start fonksiyonlarý arasýndaki
+        // zamanlama sorunlarýný önlemek için daha güvenli bir yöntemdir.
         controller = GetComponent<CharacterController>();
         animator = GetComponent<Animator>();
         myStats = GetComponent<CharacterStats>();
         skillHolder = GetComponent<SkillHolder>();
         mainCamera = Camera.main;
+    }
 
-        // Oyuncu sahneye geldiðinde, tüm UI Yöneticilerine kendisini tanýtýr.
+    private void Start()
+    {
+        // Önce karakterin temel verilerini hazýrla (örneðin yeteneklerini öðren)
+        AddTestSkills();
+
+        // Sonra, bu hazýr verilerle UI sistemlerini baþlat.
         InitializeUserInterfaces();
+    }
 
-        // TEST AMAÇLI YETENEK EKLEME
+    private void AddTestSkills()
+    {
+        // Bu kodun çalýþmasý için 'Güçlü Vuruþ' asset'inin yolu 'Assets/Resources/Data/Skills/' olmalýdýr.
         SkillData testSkill = Resources.Load<SkillData>("Data/Skills/Güçlü Vuruþ");
         if (testSkill != null)
         {
             skillHolder.LearnSkill(testSkill);
+            Debug.Log(testSkill.skillName + " yeteneði test için öðrenildi.");
         }
         else
         {
-            Debug.LogError("'Güçlü Vuruþ' yeteneði 'Resources/Data/Skills' klasöründe bulunamadý!");
+            Debug.LogError("'Güçlü Vuruþ' yeteneði 'Resources/Data/Skills/' klasöründe bulunamadý! Yolu ve dosya adýný kontrol et.");
         }
     }
 
-    // Oyuncunun varlýðýný UI sistemlerine bildiren fonksiyon
     private void InitializeUserInterfaces()
     {
+        // Singleton'lar hazýr olduðu için doðrudan eriþim saðlýyoruz.
+        // Bu Coroutine'den daha basit ve güvenilir bir yöntemdir.
         if (PlayerHUD_Controller.Instance != null)
             PlayerHUD_Controller.Instance.InitializeHUD(myStats);
         else Debug.LogError("PlayerHUD_Controller.Instance bulunamadý!");
@@ -65,17 +77,42 @@ public class PlayerController : MonoBehaviour
         HandleSkillInput();
     }
 
-    // ... HandleMovement, HandleUIInput, HandleAttackInput, StartAttack, AnimationEvent_DealDamage...
-    // ... BU FONKSÝYONLARIN HEPSÝ AYNI KALIYOR ...
-    // ... Sadece HandleSkillInput'ý güncelleyelim ...
+    private void HandleMovement()
+    {
+        float horizontal = Input.GetAxis("Horizontal");
+        float vertical = Input.GetAxis("Vertical");
+        Vector3 moveDirection = new Vector3(horizontal, 0, vertical).normalized;
+        controller.Move(moveDirection * moveSpeed * Time.deltaTime);
+        animator.SetBool("IsMoving", moveDirection.magnitude > 0.1f);
+        if (moveDirection != Vector3.zero) { transform.rotation = Quaternion.LookRotation(moveDirection); }
+    }
+
+    private void HandleUIInput()
+    {
+        if (Input.GetKeyDown(KeyCode.C))
+        {
+            if (CharacterStatsUI_Controller.Instance != null) { CharacterStatsUI_Controller.Instance.TogglePanel(); }
+        }
+    }
+
+    private void HandleAttackInput()
+    {
+        if (CharacterStatsUI_Controller.Instance != null && CharacterStatsUI_Controller.Instance.IsOpen()) return;
+        if (Input.GetMouseButtonDown(0) && !animator.GetCurrentAnimatorStateInfo(0).IsName("Attack"))
+        {
+            Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+            if (Physics.Raycast(ray, out RaycastHit hit, 100f))
+            {
+                if (hit.collider.TryGetComponent(out MonsterController monster)) { StartAttack(monster); }
+            }
+        }
+    }
 
     private void HandleSkillInput()
     {
         if (CharacterStatsUI_Controller.Instance != null && CharacterStatsUI_Controller.Instance.IsOpen()) return;
-
         if (Input.GetKeyDown(KeyCode.Alpha1)) { AttemptToUseSkill(0); }
         if (Input.GetKeyDown(KeyCode.Alpha2)) { AttemptToUseSkill(1); }
-        if (Input.GetKeyDown(KeyCode.Alpha3)) { AttemptToUseSkill(2); }
     }
 
     private void AttemptToUseSkill(int skillIndex)
@@ -85,52 +122,8 @@ public class PlayerController : MonoBehaviour
         {
             if (hit.collider.TryGetComponent(out MonsterController monster))
             {
-                transform.LookAt(monster.transform); // Yetenek kullanmadan önce hedefe dön.
+                transform.LookAt(monster.transform);
                 skillHolder.UseSkill(skillIndex, monster);
-            }
-        }
-    }
-
-    // Deðiþmeyen diðer fonksiyonlar
-    private void HandleMovement()
-    {
-        float horizontal = Input.GetAxis("Horizontal");
-        float vertical = Input.GetAxis("Vertical");
-        Vector3 moveDirection = new Vector3(horizontal, 0, vertical).normalized;
-
-        controller.Move(moveDirection * moveSpeed * Time.deltaTime);
-        animator.SetBool("IsMoving", moveDirection.magnitude > 0.1f);
-
-        if (moveDirection != Vector3.zero)
-        {
-            transform.rotation = Quaternion.LookRotation(moveDirection);
-        }
-    }
-
-    private void HandleUIInput()
-    {
-        if (Input.GetKeyDown(KeyCode.C))
-        {
-            if (CharacterStatsUI_Controller.Instance != null)
-            {
-                CharacterStatsUI_Controller.Instance.TogglePanel();
-            }
-        }
-    }
-
-    private void HandleAttackInput()
-    {
-        if (CharacterStatsUI_Controller.Instance != null && CharacterStatsUI_Controller.Instance.IsOpen()) return;
-
-        if (Input.GetMouseButtonDown(0) && !animator.GetCurrentAnimatorStateInfo(0).IsName("Attack"))
-        {
-            Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out RaycastHit hit, 100f))
-            {
-                if (hit.collider.TryGetComponent(out MonsterController monster))
-                {
-                    StartAttack(monster);
-                }
             }
         }
     }
@@ -149,7 +142,6 @@ public class PlayerController : MonoBehaviour
             int damage = Random.Range(myStats.minDamage, myStats.maxDamage + 1);
             targetStats.TakeDamage(damage, myStats);
         }
-
         currentTarget = null;
     }
 }
