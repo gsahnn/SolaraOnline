@@ -223,6 +223,7 @@ GameObject:
   - component: {fileID: 5881242615873943280}
   - component: {fileID: 8453476594251360426}
   - component: {fileID: 2145201585718618276}
+  - component: {fileID: -3497721107423748925}
   m_Layer: 5
   m_Name: SkillSlot_UI
   m_TagString: Untagged
@@ -304,6 +305,26 @@ MonoBehaviour:
   skillIcon: {fileID: 167145227334535782}
   cooldownOverlay: {fileID: 1659453410130420337}
   cooldownText: {fileID: 7387482384465933465}
+--- !u!114 &-3497721107423748925
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4004690484500438706}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 306cc8c2b49d7114eaa3623786fc2126, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.LayoutElement
+  m_IgnoreLayout: 0
+  m_MinWidth: 100
+  m_MinHeight: 100
+  m_PreferredWidth: -1
+  m_PreferredHeight: -1
+  m_FlexibleWidth: -1
+  m_FlexibleHeight: -1
+  m_LayoutPriority: 1
 --- !u!1 &7441729257591616043
 GameObject:
   m_ObjectHideFlags: 0
