@@ -12,12 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9a15fb41c82fd8249a9c341120a51061, type: 3}
   m_Name: "G\xFC\xE7l\xFC Vuru\u015F"
   m_EditorClassIdentifier: Assembly-CSharp::SkillData
-  skillName: 
-  icon: {fileID: 0}
+  skillName: "G\xFC\xE7l\xFC Vuru\u015F"
+  icon: {fileID: 21300000, guid: 61e9e2ae792c72e4ca47cc15f20e4128, type: 3}
   description: 
   type: 0
-  manaCost: 0
-  cooldown: 0
-  castTime: 0
-  baseDamage: 0
-  damageMultiplier: 0
+  manaCost: 10
+  cooldown: 10
+  castTime: 2
+  baseDamage: 10
+  damageMultiplier: 1.5
