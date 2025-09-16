@@ -15,9 +15,9 @@ public class PlayerInteraction : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.E) && currentInteractable != null)
         {
-            currentInteractable.Interact();
+            // Interact fonksiyonuna, etkileþime girenin kim olduðunu (yani bu objeyi) bildir.
+            currentInteractable.Interact(this.gameObject);
         }
-    }
 
     void CheckForInteractable()
     {
@@ -49,4 +49,5 @@ public class PlayerInteraction : MonoBehaviour
             currentInteractable = null;
         }
     }
+}
 }

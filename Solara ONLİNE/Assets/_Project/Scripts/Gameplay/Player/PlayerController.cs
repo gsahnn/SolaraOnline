@@ -50,8 +50,8 @@ public class PlayerController : MonoBehaviour
         SkillData testSkill = Resources.Load<SkillData>("Data/Skills/Güçlü Vuruþ");
         if (testSkill != null) { skillHolder.LearnSkill(testSkill); }
 
-        QuestData testQuest = Resources.Load<QuestData>("Data/Quests/Kurt Avý");
-        if (testQuest != null) { GetComponent<QuestLog>().AddQuest(testQuest); }
+        // QuestData testQuest = Resources.Load<QuestData>("Data/Quests/Kurt Avý");
+        // if (testQuest != null) { GetComponent<QuestLog>().AddQuest(testQuest); }
     }
 
     private void InitializeUserInterfaces()

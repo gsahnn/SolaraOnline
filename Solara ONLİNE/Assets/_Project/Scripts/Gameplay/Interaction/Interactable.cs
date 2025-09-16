@@ -1,47 +1,39 @@
+// Interactable.cs (GÜNCELLENMÝÞ HALÝ)
 using UnityEngine;
 using UnityEngine.Events;
 
+// GameObject parametresi alan yeni bir UnityEvent türü tanýmlýyoruz.
+[System.Serializable]
+public class InteractionEvent : UnityEvent<GameObject> { }
+
 public class Interactable : MonoBehaviour
 {
-    // Inspector'dan NPC'nin kafasýnýn üstüne koyacaðýmýz 'Interaction_Canvas' prefab'ýný buraya sürükleyeceðiz.
     [SerializeField] private GameObject interactionPromptPrefab;
+    public InteractionEvent OnInteract; // Artýk GameObject alabilen yeni event'imizi kullanýyoruz.
 
-    // Bu objeyle etkileþime girildiðinde ne olacaðýný Inspector'dan ayarlayacaðýz.
-    public UnityEvent OnInteract;
+    private GameObject promptInstance;
 
-    private GameObject promptInstance; // Oluþturulan prompt objesinin referansý
-
-    // Oyuncu bu objeyi etkileþim için "seçtiðinde" çaðrýlacak.
     public void ShowPrompt()
     {
         if (promptInstance == null)
         {
-            // NPC'nin pozisyonunun biraz üzerinde prompt'u oluþtur.
             promptInstance = Instantiate(interactionPromptPrefab, transform.position + Vector3.up * 2f, Quaternion.identity);
-            // Prompt'un sürekli kameraya bakmasýný saðla (opsiyonel ama güzel bir özellik)
             promptInstance.AddComponent<FaceCamera>();
         }
         promptInstance.SetActive(true);
     }
 
-    // Oyuncu etkileþim alanýndan çýktýðýnda çaðrýlacak.
     public void HidePrompt()
     {
-        if (promptInstance != null)
-        {
-            promptInstance.SetActive(false);
-        }
+        if (promptInstance != null) promptInstance.SetActive(false);
     }
 
-    // "E" tuþuna basýldýðýnda bu fonksiyon çaðrýlacak.
-    public void Interact()
+    public void Interact(GameObject interactor)
     {
-        OnInteract.Invoke();
+        OnInteract.Invoke(interactor);
     }
 }
 
-// Bu küçük yardýmcý script, World Space Canvas'ýn her zaman kameraya dönük olmasýný saðlar.
-// Ayrý bir dosyaya koymaya gerek yok, Interactable.cs'in altýnda kalabilir.
 public class FaceCamera : MonoBehaviour
 {
     private Camera mainCamera;

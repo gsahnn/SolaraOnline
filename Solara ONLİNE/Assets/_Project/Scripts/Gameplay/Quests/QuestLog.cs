@@ -48,4 +48,27 @@ public class QuestLog : MonoBehaviour
             quest.OnQuestUpdated -= RelayQuestUpdate;
         }
     }
-}
+    public void ClaimReward(QuestData questData)
+    {
+        QuestStatus questToComplete = activeQuests.Find(q => q.questData == questData);
+
+        if (questToComplete != null && questToComplete.isCompleted)
+        {
+            // Oyuncunun statlarýna eriþip ödülleri ver.
+            CharacterStats playerStats = GetComponent<CharacterStats>();
+            if (playerStats != null)
+            {
+                playerStats.AddExperience(questToComplete.questData.experienceReward);
+                // Altýn ekleme sistemi henüz yok, þimdilik Debug.Log ile yapalým.
+                Debug.Log(questToComplete.questData.goldReward + " altýn kazanýldý!");
+            }
+
+            // Tamamlanan görevi aktif listeden kaldýr.
+            // Ýleride "Tamamlanmýþ Görevler" listesine ekleyebiliriz.
+            activeQuests.Remove(questToComplete);
+
+            // UI'ýn güncellenmesi için event'i tetikle.
+            OnQuestLogUpdated?.Invoke();
+        }
+    }
+}  
