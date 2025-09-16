@@ -552,6 +552,10 @@ PrefabInstance:
       propertyPath: currentState
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 3907015540904755839, guid: 5b0d528c4f895984fa2cb193db045f91, type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6258253535508276636, guid: 5b0d528c4f895984fa2cb193db045f91, type: 3}
       propertyPath: m_Name
       value: stray_dog
@@ -594,6 +598,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6742478814854381350, guid: 5b0d528c4f895984fa2cb193db045f91, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9188078402568670529, guid: 5b0d528c4f895984fa2cb193db045f91, type: 3}
+      propertyPath: m_AutoBraking
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []

@@ -1,13 +1,13 @@
-// MonsterController.cs (YENÝ YAPAY ZEKA VERSÝYONU)
+// MonsterController.cs (Wait/Run sistemiyle tam uyumlu)
 using UnityEngine;
-using UnityEngine.AI; // NavMeshAgent için bu kütüphane gerekli
+using UnityEngine.AI;
 
 public enum AIState
 {
-    Idle,       // Boþta duruyor
-    Patrolling, // Geziniyor
-    Chasing,    // Oyuncuyu kovalýyor
-    Attacking   // Oyuncuya saldýrýyor
+    Idle,
+    Patrolling,
+    Chasing,
+    Attacking
 }
 
 [RequireComponent(typeof(CharacterStats), typeof(NavMeshAgent))]
@@ -15,18 +15,17 @@ public class MonsterController : MonoBehaviour
 {
     [Header("Yapay Zeka Ayarlarý")]
     [SerializeField] private AIState currentState = AIState.Patrolling;
-    [SerializeField] private float sightRange = 10f; // Oyuncuyu fark etme mesafesi
-    [SerializeField] private float attackRange = 2f; // Saldýrýya baþlama mesafesi
-    [SerializeField] private float patrolRadius = 15f; // Baþlangýç noktasýndan ne kadar uzaða gezinebilir
-    [SerializeField] private float timeBetweenAttacks = 2f; // Saldýrýlar arasý bekleme süresi
+    [SerializeField] private float sightRange = 10f;
+    [SerializeField] private float attackRange = 2f;
+    [SerializeField] private float patrolRadius = 15f;
+    [SerializeField] private float timeBetweenAttacks = 2f;
+    [SerializeField] private float rotationSpeed = 5f;
 
-    // Referanslar
     private NavMeshAgent agent;
     private CharacterStats myStats;
     private Transform playerTarget;
     private Animator animator;
 
-    // Zamanlayýcýlar ve Durum
     private Vector3 startPosition;
     private float attackCooldownTimer = 0;
 
@@ -35,60 +34,74 @@ public class MonsterController : MonoBehaviour
         agent = GetComponent<NavMeshAgent>();
         myStats = GetComponent<CharacterStats>();
         animator = GetComponent<Animator>();
-        // Oyuncuyu bul. Gerçek bir oyunda bu daha dinamik olur, þimdilik basit tutalým.
         playerTarget = FindFirstObjectByType<PlayerController>()?.transform;
         startPosition = transform.position;
+        agent.updateRotation = false;
     }
 
     private void Update()
     {
-        // Zamanlayýcýlarý güncelle
         if (attackCooldownTimer > 0) attackCooldownTimer -= Time.deltaTime;
 
-        // Animatör'ü güncelle (NavMeshAgent'ýn hýzýna göre yürüme animasyonunu ayarla)
-        animator.SetFloat("Speed", agent.velocity.magnitude / agent.speed);
+        UpdateMovementAndRotation();
 
-        // O anki duruma göre ne yapacaðýna karar ver
         switch (currentState)
         {
-            case AIState.Idle:
-                UpdateIdleState();
-                break;
-            case AIState.Patrolling:
-                UpdatePatrollingState();
-                break;
-            case AIState.Chasing:
-                UpdateChasingState();
-                break;
-            case AIState.Attacking:
-                UpdateAttackingState();
-                break;
+            case AIState.Idle: UpdateIdleState(); break;
+            case AIState.Patrolling: UpdatePatrollingState(); break;
+            case AIState.Chasing: UpdateChasingState(); break;
+            case AIState.Attacking: UpdateAttackingState(); break;
         }
     }
 
-    private void ChangeState(AIState newState)
+    private void UpdateMovementAndRotation()
     {
-        if (currentState == newState) return;
-        currentState = newState;
+        if (agent.velocity.magnitude > 0.1f)
+        {
+            Quaternion lookRotation = Quaternion.LookRotation(agent.velocity.normalized);
+            transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * rotationSpeed);
+        }
+
+        // Bu satýr, Animator'e hýzý bildirir. Animator de buna göre 'Wait' veya 'Run' animasyonuna geçer.
+        animator.SetFloat("Speed", agent.velocity.magnitude / agent.speed, 0.1f, Time.deltaTime);
     }
 
-    // --- DURUM GÜNCELLEME FONKSÝYONLARI ---
-
-    private void UpdateIdleState()
+    private void UpdateAttackingState()
     {
-        if (CanSeePlayer()) ChangeState(AIState.Chasing);
-        // Ýstersen burada bir süre sonra tekrar devriyeye dönmesini saðlayabilirsin.
-    }
-
-    private void UpdatePatrollingState()
-    {
-        if (CanSeePlayer())
+        if (playerTarget == null || Vector3.Distance(transform.position, playerTarget.position) > attackRange)
         {
             ChangeState(AIState.Chasing);
             return;
         }
 
-        // Eðer hedefine ulaþtýysa veya hiç hedefi yoksa, yeni bir hedef belirle.
+        agent.ResetPath();
+        Vector3 directionToPlayer = (playerTarget.position - transform.position).normalized;
+        Quaternion lookRotation = Quaternion.LookRotation(new Vector3(directionToPlayer.x, 0, directionToPlayer.z));
+        transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * rotationSpeed * 2);
+
+        if (attackCooldownTimer <= 0)
+        {
+            animator.SetTrigger("Attack");
+            // Bu hasar verme, animasyonun ortasýna bir event olarak eklenebilir.
+            // Örneðin: public void AnimationEvent_MonsterDealDamage() { ... }
+            playerTarget.GetComponent<CharacterStats>().TakeDamage(Random.Range(myStats.minDamage, myStats.maxDamage + 1), myStats);
+            attackCooldownTimer = timeBetweenAttacks;
+        }
+    }
+
+    #region Unchanged State Functions
+    private void ChangeState(AIState newState)
+    {
+        if (currentState == newState) return;
+        currentState = newState;
+    }
+    private void UpdateIdleState()
+    {
+        if (CanSeePlayer()) ChangeState(AIState.Chasing);
+    }
+    private void UpdatePatrollingState()
+    {
+        if (CanSeePlayer()) { ChangeState(AIState.Chasing); return; }
         if (!agent.pathPending && agent.remainingDistance < 0.5f)
         {
             Vector3 randomPoint = startPosition + Random.insideUnitSphere * patrolRadius;
@@ -96,65 +109,32 @@ public class MonsterController : MonoBehaviour
             agent.SetDestination(hit.position);
         }
     }
-
     private void UpdateChasingState()
     {
         if (playerTarget == null || !CanSeePlayer())
         {
-            // Oyuncuyu kaybettiyse, devriyeye geri dön.
             agent.SetDestination(startPosition);
             ChangeState(AIState.Patrolling);
             return;
         }
 
-        // Oyuncu saldýrý menziline girdi mi?
         if (Vector3.Distance(transform.position, playerTarget.position) <= attackRange)
         {
             ChangeState(AIState.Attacking);
         }
         else
         {
-            // Girmedilse, takibe devam et.
             agent.SetDestination(playerTarget.position);
         }
     }
-
-    private void UpdateAttackingState()
-    {
-        if (playerTarget == null || Vector3.Distance(transform.position, playerTarget.position) > attackRange)
-        {
-            // Oyuncu menzilden çýktýysa, takibe geri dön.
-            ChangeState(AIState.Chasing);
-            return;
-        }
-
-        // Saldýrýya devam et
-        agent.ResetPath(); // Saldýrýrken yürümesin.
-        transform.LookAt(playerTarget); // Oyuncuya dön.
-
-        if (attackCooldownTimer <= 0)
-        {
-            // Saldýrý zamaný!
-            animator.SetTrigger("Attack"); // Saldýrý animasyonunu tetikle
-
-            // Animasyon Event'i ile hasar verme burada da kullanýlabilir veya basitçe hasar verilebilir.
-            // Þimdilik basitçe hasar verelim:
-            playerTarget.GetComponent<CharacterStats>().TakeDamage(Random.Range(myStats.minDamage, myStats.maxDamage + 1), myStats);
-
-            attackCooldownTimer = timeBetweenAttacks; // Bekleme süresini baþlat.
-        }
-    }
-
-    // --- YARDIMCI FONKSÝYONLAR ---
-
     private bool CanSeePlayer()
     {
         if (playerTarget == null) return false;
         return Vector3.Distance(transform.position, playerTarget.position) <= sightRange;
     }
+    #endregion
 
-    // Bu fonksiyonlar hala ayný kalacak.
-    #region Unchanged Methods
+    #region Unchanged Original Functions
     public void HandleDeath(CharacterStats killer) { /*...*/ }
     private void DropLoot() { /*...*/ }
     private void InstantiateLoot(ItemData itemDataToDrop) { /*...*/ }
