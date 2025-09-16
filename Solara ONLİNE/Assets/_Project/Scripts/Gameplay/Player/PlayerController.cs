@@ -10,6 +10,10 @@ public class PlayerController : MonoBehaviour
     [Header("Hareket Ayarlarý")]
     [SerializeField] private float moveSpeed = 5f;
 
+    // Durum Deðiþkeni
+    private bool isAttacking = false;
+
+    // Bileþen Referanslarý
     private CharacterController controller;
     private Animator animator;
     private Camera mainCamera;
@@ -19,8 +23,6 @@ public class PlayerController : MonoBehaviour
 
     private void Awake()
     {
-        // Referanslarý Awake içinde almak, Start fonksiyonlarý arasýndaki
-        // zamanlama sorunlarýný önlemek için daha güvenli bir yöntemdir.
         controller = GetComponent<CharacterController>();
         animator = GetComponent<Animator>();
         myStats = GetComponent<CharacterStats>();
@@ -30,100 +32,53 @@ public class PlayerController : MonoBehaviour
 
     private void Start()
     {
-        // Önce karakterin temel verilerini hazýrla (örneðin yeteneklerini öðren)
         AddTestSkills();
-
-        // Sonra, bu hazýr verilerle UI sistemlerini baþlat.
         InitializeUserInterfaces();
-
-        QuestData testQuest = Resources.Load<QuestData>("Data/Quests/Kurt Avý");
-        if (testQuest != null)
-        {
-            // GetComponent<QuestLog>() diyerek oyuncunun üzerindeki QuestLog'a ulaþýp görevi ekliyoruz.
-            GetComponent<QuestLog>().AddQuest(testQuest);
-        }
-        else
-        {
-            Debug.LogError("'Kurt Avý' görevi 'Resources/Data/Quests' klasöründe bulunamadý!");
-        }
-    }
-
-    private void AddTestSkills()
-    {
-        // Bu kodun çalýþmasý için 'Güçlü Vuruþ' asset'inin yolu 'Assets/Resources/Data/Skills/' olmalýdýr.
-        SkillData testSkill = Resources.Load<SkillData>("Data/Skills/Güçlü Vuruþ");
-        if (testSkill != null)
-        {
-            skillHolder.LearnSkill(testSkill);
-            Debug.Log(testSkill.skillName + " yeteneði test için öðrenildi.");
-        }
-        else
-        {
-            Debug.LogError("'Güçlü Vuruþ' yeteneði 'Resources/Data/Skills/' klasöründe bulunamadý! Yolu ve dosya adýný kontrol et.");
-        }
-    }
-
-    private void InitializeUserInterfaces()
-    {
-        // Singleton'lar hazýr olduðu için doðrudan eriþim saðlýyoruz.
-        // Bu Coroutine'den daha basit ve güvenilir bir yöntemdir.
-        if (PlayerHUD_Controller.Instance != null)
-            PlayerHUD_Controller.Instance.InitializeHUD(myStats);
-        else Debug.LogError("PlayerHUD_Controller.Instance bulunamadý!");
-
-        if (CharacterStatsUI_Controller.Instance != null)
-            CharacterStatsUI_Controller.Instance.Initialize(myStats);
-        else Debug.LogError("CharacterStatsUI_Controller.Instance bulunamadý!");
-
-        if (SkillBar_Controller.Instance != null)
-            SkillBar_Controller.Instance.Initialize(skillHolder);
-        else Debug.LogError("SkillBar_Controller.Instance bulunamadý!");
     }
 
     private void Update()
     {
+        if (CharacterStatsUI_Controller.Instance != null && CharacterStatsUI_Controller.Instance.IsOpen())
+        {
+            return;
+        }
+
+        if (isAttacking)
+        {
+            return;
+        }
+
         HandleMovement();
-        HandleAttackInput();
-        HandleUIInput();
-        HandleSkillInput();
+        HandleInput();
     }
 
-    private void HandleMovement()
+    private void HandleInput()
     {
-        float horizontal = Input.GetAxis("Horizontal");
-        float vertical = Input.GetAxis("Vertical");
-        Vector3 moveDirection = new Vector3(horizontal, 0, vertical).normalized;
-        controller.Move(moveDirection * moveSpeed * Time.deltaTime);
-        animator.SetBool("IsMoving", moveDirection.magnitude > 0.1f);
-        if (moveDirection != Vector3.zero) { transform.rotation = Quaternion.LookRotation(moveDirection); }
-    }
+        if (Input.GetKeyDown(KeyCode.Alpha1)) { AttemptToUseSkill(0); return; }
+        if (Input.GetKeyDown(KeyCode.Alpha2)) { AttemptToUseSkill(1); return; }
+        if (Input.GetKeyDown(KeyCode.Alpha3)) { AttemptToUseSkill(2); return; }
 
-    private void HandleUIInput()
-    {
+        if (Input.GetMouseButtonDown(0))
+        {
+            AttemptToAttack();
+        }
+
         if (Input.GetKeyDown(KeyCode.C))
         {
             if (CharacterStatsUI_Controller.Instance != null) { CharacterStatsUI_Controller.Instance.TogglePanel(); }
         }
     }
 
-    private void HandleAttackInput()
+    private void AttemptToAttack()
     {
-        if (CharacterStatsUI_Controller.Instance != null && CharacterStatsUI_Controller.Instance.IsOpen()) return;
-        if (Input.GetMouseButtonDown(0) && !animator.GetCurrentAnimatorStateInfo(0).IsName("Attack"))
+        Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+        if (Physics.Raycast(ray, out RaycastHit hit, 100f))
         {
-            Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out RaycastHit hit, 100f))
+            if (hit.collider.TryGetComponent(out MonsterController monster))
             {
-                if (hit.collider.TryGetComponent(out MonsterController monster)) { StartAttack(monster); }
+                StartAttack(monster);
             }
         }
-    }
-
-    private void HandleSkillInput()
-    {
-        if (CharacterStatsUI_Controller.Instance != null && CharacterStatsUI_Controller.Instance.IsOpen()) return;
-        if (Input.GetKeyDown(KeyCode.Alpha1)) { AttemptToUseSkill(0); }
-        if (Input.GetKeyDown(KeyCode.Alpha2)) { AttemptToUseSkill(1); }
     }
 
     private void AttemptToUseSkill(int skillIndex)
@@ -144,6 +99,7 @@ public class PlayerController : MonoBehaviour
         currentTarget = target;
         transform.LookAt(target.transform.position);
         animator.SetTrigger("Attack");
+        isAttacking = true;
     }
 
     public void AnimationEvent_DealDamage()
@@ -153,6 +109,50 @@ public class PlayerController : MonoBehaviour
             int damage = Random.Range(myStats.minDamage, myStats.maxDamage + 1);
             targetStats.TakeDamage(damage, myStats);
         }
+    }
+
+    public void AnimationEvent_AttackFinished()
+    {
+        isAttacking = false;
         currentTarget = null;
+    }
+
+    private void InitializeUserInterfaces()
+    {
+        if (PlayerHUD_Controller.Instance != null)
+            PlayerHUD_Controller.Instance.InitializeHUD(myStats);
+        else Debug.LogError("PlayerHUD_Controller.Instance bulunamadý!");
+
+        if (CharacterStatsUI_Controller.Instance != null)
+            CharacterStatsUI_Controller.Instance.Initialize(myStats);
+        else Debug.LogError("CharacterStatsUI_Controller.Instance bulunamadý!");
+
+        if (SkillBar_Controller.Instance != null)
+            SkillBar_Controller.Instance.Initialize(skillHolder);
+        else Debug.LogError("SkillBar_Controller.Instance bulunamadý!");
+    }
+
+    private void AddTestSkills()
+    {
+        SkillData testSkill = Resources.Load<SkillData>("Data/Skills/Güçlü Vuruþ");
+        if (testSkill != null)
+        {
+            skillHolder.LearnSkill(testSkill);
+            Debug.Log(testSkill.skillName + " yeteneði test için öðrenildi.");
+        }
+        else
+        {
+            Debug.LogError("'Güçlü Vuruþ' yeteneði 'Resources/Data/Skills/' klasöründe bulunamadý! Yolu ve dosya adýný kontrol et.");
+        }
+    }
+
+    private void HandleMovement()
+    {
+        float horizontal = Input.GetAxis("Horizontal");
+        float vertical = Input.GetAxis("Vertical");
+        Vector3 moveDirection = new Vector3(horizontal, 0, vertical).normalized;
+        controller.Move(moveDirection * moveSpeed * Time.deltaTime);
+        animator.SetBool("IsMoving", moveDirection.magnitude > 0.1f);
+        if (moveDirection != Vector3.zero) { transform.rotation = Quaternion.LookRotation(moveDirection); }
     }
 }

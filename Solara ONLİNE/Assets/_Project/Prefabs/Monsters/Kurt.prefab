@@ -10,7 +10,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: dec350e5eba06c944a40238400803880, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.24283957
+      value: 7.57492
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: dec350e5eba06c944a40238400803880, type: 3}
       propertyPath: m_LocalPosition.y
@@ -18,7 +18,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: dec350e5eba06c944a40238400803880, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.4773296
+      value: 3.81
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: dec350e5eba06c944a40238400803880, type: 3}
       propertyPath: m_LocalRotation.w
@@ -50,7 +50,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: dec350e5eba06c944a40238400803880, type: 3}
       propertyPath: m_Name
-      value: stray_dog
+      value: Kurt
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -59,6 +59,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: dec350e5eba06c944a40238400803880, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3473489944208671249}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: dec350e5eba06c944a40238400803880, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 381604117071453611}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: dec350e5eba06c944a40238400803880, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7288544249638830967}
   m_SourcePrefab: {fileID: 100100000, guid: dec350e5eba06c944a40238400803880, type: 3}
 --- !u!1 &6959690073652926748 stripped
 GameObject:
@@ -77,6 +83,56 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e96bf63407a74514c894cddb31dd6ae4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MonsterController
-  maxHealth: 100
   lootTable: {fileID: 11400000, guid: 3d36d1077e441ef4693db824e7065fd3, type: 2}
   itemPickupPrefab: {fileID: 3713128381090376522, guid: 2eaab18b379b9c944866b23d9cb80281, type: 3}
+  experienceGranted: 50
+--- !u!114 &381604117071453611
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6959690073652926748}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2777fefcfc3a16340bc3c24601d4aab4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterStats
+  level: 1
+  currentExp: 0
+  expToNextLevel: 100
+  statPointsToAssign: 0
+  strength: 10
+  dexterity: 10
+  intelligence: 10
+  vitality: 10
+  maxHealth: 0
+  currentHealth: 0
+  maxMana: 0
+  currentMana: 0
+  minDamage: 0
+  maxDamage: 0
+  defense: 0
+--- !u!136 &7288544249638830967
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6959690073652926748}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.5
+  m_Height: 1
+  m_Direction: 1
+  m_Center: {x: 0, y: 0.5, z: 0}
