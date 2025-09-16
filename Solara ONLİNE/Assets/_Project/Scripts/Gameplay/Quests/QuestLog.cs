@@ -12,22 +12,40 @@ public class QuestLog : MonoBehaviour
     {
         if (newQuest == null || activeQuests.Any(q => q.questData == newQuest)) return;
 
-        activeQuests.Add(new QuestStatus(newQuest));
+        QuestStatus newQuestStatus = new QuestStatus(newQuest);
+
+        // YENÝ VE KRÝTÝK BÖLÜM:
+        // Her bir görevin kendi OnQuestUpdated event'ine abone oluyoruz.
+        newQuestStatus.OnQuestUpdated += RelayQuestUpdate;
+
+        activeQuests.Add(newQuestStatus);
+
+        // Görev eklendiðinde genel event'i tetikle ki UI'da görünsün.
+        OnQuestLogUpdated?.Invoke();
+    }
+
+    // Bu fonksiyon, herhangi bir görevden "ben güncellendim" sinyali geldiðinde çalýþýr.
+    private void RelayQuestUpdate()
+    {
+        // Gelen bilgiyi doðrudan genel event'e aktararak UI'a haber veriyoruz.
         OnQuestLogUpdated?.Invoke();
     }
 
     public void AddQuestProgress(string targetName, int amount)
     {
-        bool questUpdated = false;
-        foreach (var quest in activeQuests.Where(q => q.questData.targetName == targetName && !q.isCompleted))
+        // Artýk burada 'isCompleted' kontrolü yapmýyoruz! Bu sorumluluk QuestStatus'un.
+        foreach (var quest in activeQuests.Where(q => q.questData.targetName == targetName))
         {
             quest.AddProgress(amount);
-            questUpdated = true;
         }
+    }
 
-        if (questUpdated)
+    // Obje yok edildiðinde event aboneliklerini temizlemek, hafýza sýzýntýlarýný önler.
+    private void OnDestroy()
+    {
+        foreach (var quest in activeQuests)
         {
-            OnQuestLogUpdated?.Invoke();
+            quest.OnQuestUpdated -= RelayQuestUpdate;
         }
     }
 }

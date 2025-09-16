@@ -17,6 +17,6 @@ MonoBehaviour:
     L\xFCtfen 1 tanesini temizle."
   goalType: 0
   requiredAmount: 1
-  targetName: stray_dog
+  targetName: Kurt
   experienceReward: 250
   goldReward: 100
