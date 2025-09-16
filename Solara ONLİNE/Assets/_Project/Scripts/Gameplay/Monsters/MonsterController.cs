@@ -8,16 +8,28 @@ public class MonsterController : MonoBehaviour
     [SerializeField] private GameObject itemPickupPrefab;
     [SerializeField] private int experienceGranted = 50;
 
+    // Bu fonksiyon, CharacterStats script'i tarafýndan, canavarýn caný 0 olduðunda çaðrýlýr.
     public void HandleDeath(CharacterStats killer)
     {
         if (killer != null)
         {
+            // Öldürene tecrübe puanýný ver.
             killer.AddExperience(experienceGranted);
-            if (killer.TryGetComponent(out QuestLog questLog)) ;
-            questLog.AddQuestProgress(this.gameObject.name, 1);
+
+            // Öldürenin bir QuestLog'u varsa, görev ilerlemesi için ona haber ver.
+            // DÜZELTME: 'if' ifadesinin sonundaki noktalý virgül kaldýrýldý.
+            if (killer.TryGetComponent(out QuestLog questLog))
+            {
+                // Bu canavarýn adýný ve 1 adet kesildiðini bildir.
+                // Örneðin, canavarýn adý "Kurt" ise, "Kurt" ismini gönderir.
+                questLog.AddQuestProgress(this.gameObject.name, 1);
+            }
         }
-        
+
+        // Eþyalarý düþür.
         DropLoot();
+
+        // Son olarak, canavar objesini yok et.
         Destroy(gameObject);
     }
 

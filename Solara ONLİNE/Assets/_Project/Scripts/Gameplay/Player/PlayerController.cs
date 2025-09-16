@@ -35,9 +35,17 @@ public class PlayerController : MonoBehaviour
 
         // Sonra, bu hazýr verilerle UI sistemlerini baþlat.
         InitializeUserInterfaces();
+
         QuestData testQuest = Resources.Load<QuestData>("Data/Quests/Kurt Avý");
-        if (testQuest != null) ;
-        GetComponent<QuestLog>().AddQuest(testQuest);
+        if (testQuest != null)
+        {
+            // GetComponent<QuestLog>() diyerek oyuncunun üzerindeki QuestLog'a ulaþýp görevi ekliyoruz.
+            GetComponent<QuestLog>().AddQuest(testQuest);
+        }
+        else
+        {
+            Debug.LogError("'Kurt Avý' görevi 'Resources/Data/Quests' klasöründe bulunamadý!");
+        }
     }
 
     private void AddTestSkills()
