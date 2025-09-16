@@ -22,6 +22,6 @@ MonoBehaviour:
     Yard\u0131mlar\u0131n i\xE7in te\u015Fekk\xFCrler."
   goalType: 0
   requiredAmount: 1
-  targetName: Kurt
+  targetName: stray_dog
   experienceReward: 250
   goldReward: 100
