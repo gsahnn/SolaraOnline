@@ -38,6 +38,7 @@ public class DialogueSystem : MonoBehaviour
     // Basit bir mesaj göstermek için
     public void ShowDialogue(string sentence)
     {
+        Debug.Log("<color=cyan>DIALOGUE SYSTEM:</color> ShowDialogue çaðrýldý! Metin: " + sentence);
         CloseAllPanels();
         dialoguePanel.SetActive(true);
         dialogueText.text = sentence;
@@ -46,6 +47,7 @@ public class DialogueSystem : MonoBehaviour
     // Bir soru sormak ve onay beklemek için
     public void ShowConfirmation(string question, Action onAccept)
     {
+        Debug.Log("<color=cyan>DIALOGUE SYSTEM:</color> ShowConfirmation çaðrýldý! Soru: " + question);
         CloseAllPanels();
         confirmationPanel.SetActive(true);
         confirmationText.text = question;

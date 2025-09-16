@@ -1,37 +1,52 @@
-// QuestGiver.cs (YENÝ VE TAM HALÝ)
 using UnityEngine;
-using System.Linq; // LINQ için
+using System.Linq;
 
+[RequireComponent(typeof(Interactable))]
 public class QuestGiver : MonoBehaviour
 {
     [SerializeField] private QuestData questToGive;
     private QuestLog playerQuestLog;
 
-    // Bu fonksiyon Interactable tarafýndan çaðrýlýr.
     public void OnInteract(GameObject interactor)
     {
-        // Etkileþime giren objenin QuestLog'unu al.
+        // 1. Aktif bileþenleri ara.
         playerQuestLog = interactor.GetComponent<QuestLog>();
-        if (playerQuestLog == null) return; // Etkileþime giren oyuncu deðilse bir þey yapma.
 
+        // 2. Eðer bulamadýysak, pasif olanlar da dahil olmak üzere tekrar ara.
+        if (playerQuestLog == null)
+        {
+            playerQuestLog = interactor.GetComponentInChildren<QuestLog>(true); // 'true' pasif olanlarý da arar.
+
+            if (playerQuestLog != null)
+            {
+                // EÐER BURAYA GÝRERSE, SORUN KESÝNLÝKLE BUDUR!
+                Debug.LogError("<size=16><color=red>KRÝTÝK HATA:</color> 'QuestLog' script'i Oyuncu prefab'ýnda bulundu ama PASÝF (DISABLED) durumda! Lütfen Player prefab'ýný kontrol edip QuestLog script'inin yanýndaki kutucuðu iþaretleyin.</size>");
+                return;
+            }
+            else
+            {
+                // Eðer burada bile bulamadýysa, script gerçekten de ekli deðildir.
+                Debug.LogError("<size=16><color=red>KRÝTÝK HATA:</color> Oyuncu prefab'ýnda 'QuestLog' script'i HÝÇBÝR ÞEKÝLDE bulunamadý!</size>");
+                return;
+            }
+        }
+
+        // --- Eðer QuestLog bulunduysa, normal akýþ devam eder ---
         QuestStatus currentStatus = playerQuestLog.activeQuests.FirstOrDefault(q => q.questData == questToGive);
 
         if (currentStatus == null)
         {
-            // Görev hiç alýnmamýþsa, onay penceresi göster.
             DialogueSystem.Instance.ShowConfirmation(questToGive.startDialogue, AcceptQuest);
         }
         else
         {
             if (currentStatus.isCompleted)
             {
-                // Görev tamamlanmýþsa, ödülü ver.
                 DialogueSystem.Instance.ShowDialogue(questToGive.completedDialogue);
                 playerQuestLog.ClaimReward(questToGive);
             }
             else
             {
-                // Görev devam ediyorsa, bilgilendirme diyaloðu göster.
                 DialogueSystem.Instance.ShowDialogue(questToGive.inProgressDialogue);
             }
         }

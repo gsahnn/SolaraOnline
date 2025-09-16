@@ -1,7 +1,6 @@
 using UnityEngine;
 using System.Collections;
 
-// DOÐRU KULLANIM: Her bir zorunlu bileþen için ayrý bir [RequireComponent] satýrý.
 [RequireComponent(typeof(CharacterController))]
 [RequireComponent(typeof(Animator))]
 [RequireComponent(typeof(CharacterStats))]
@@ -39,6 +38,27 @@ public class PlayerController : MonoBehaviour
 
         AddTestContent();
         InitializeUserInterfaces();
+    }
+
+    // --- GÜNCELLENMÝÞ FONKSÝYON ---
+    private void AddTestContent()
+    {
+        // Sadece test yeteneðini ekle
+        SkillData testSkill = Resources.Load<SkillData>("Data/Skills/Güçlü Vuruþ");
+        if (testSkill != null)
+        {
+            skillHolder.LearnSkill(testSkill);
+        }
+
+        // GÖREV EKLEME KODU BURADAN KALDIRILDI!
+    }
+
+    private void InitializeUserInterfaces()
+    {
+        PlayerHUD_Controller.Instance?.InitializeHUD(myStats);
+        CharacterStatsUI_Controller.Instance?.Initialize(myStats);
+        SkillBar_Controller.Instance?.Initialize(skillHolder);
+        QuestTracker_Controller.Instance?.Initialize(GetComponent<QuestLog>());
     }
 
     private void Update()
@@ -89,14 +109,6 @@ public class PlayerController : MonoBehaviour
         currentTarget = null;
     }
 
-    private void InitializeUserInterfaces()
-    {
-        PlayerHUD_Controller.Instance?.InitializeHUD(myStats);
-        CharacterStatsUI_Controller.Instance?.Initialize(myStats);
-        SkillBar_Controller.Instance?.Initialize(skillHolder);
-        QuestTracker_Controller.Instance?.Initialize(GetComponent<QuestLog>());
-    }
-
     private void HandleMovement()
     {
         float horizontal = Input.GetAxis("Horizontal");
@@ -105,12 +117,6 @@ public class PlayerController : MonoBehaviour
         controller.Move(moveDirection * moveSpeed * Time.deltaTime);
         animator.SetBool("IsMoving", moveDirection.magnitude > 0.1f);
         if (moveDirection != Vector3.zero) { transform.rotation = Quaternion.LookRotation(moveDirection); }
-    }
-
-    private void AddTestContent()
-    {
-        skillHolder.LearnSkill(Resources.Load<SkillData>("Data/Skills/Güçlü Vuruþ"));
-        GetComponent<QuestLog>().AddQuest(Resources.Load<QuestData>("Data/Quests/Kurt Avý"));
     }
 
     private void AttemptToUseSkill(int skillIndex)
