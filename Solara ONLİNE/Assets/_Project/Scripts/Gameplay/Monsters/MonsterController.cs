@@ -13,7 +13,10 @@ public class MonsterController : MonoBehaviour
         if (killer != null)
         {
             killer.AddExperience(experienceGranted);
+            if (killer.TryGetComponent(out QuestLog questLog)) ;
+            questLog.AddQuestProgress(this.gameObject.name, 1);
         }
+        
         DropLoot();
         Destroy(gameObject);
     }

@@ -35,6 +35,9 @@ public class PlayerController : MonoBehaviour
 
         // Sonra, bu hazýr verilerle UI sistemlerini baþlat.
         InitializeUserInterfaces();
+        QuestData testQuest = Resources.Load<QuestData>("Data/Quests/Kurt Avý");
+        if (testQuest != null) ;
+        GetComponent<QuestLog>().AddQuest(testQuest);
     }
 
     private void AddTestSkills()
