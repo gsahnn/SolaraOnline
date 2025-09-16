@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
+// DOÐRU KULLANIM: Her bir zorunlu bileþen için ayrý bir [RequireComponent] satýrý.
 [RequireComponent(typeof(CharacterController))]
 [RequireComponent(typeof(Animator))]
 [RequireComponent(typeof(CharacterStats))]
@@ -42,8 +43,8 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        if (CharacterStatsUI_Controller.Instance != null && CharacterStatsUI_Controller.Instance.IsOpen()) return;
-        if (isActionInProgress) return;
+        bool isUIOpen = CharacterStatsUI_Controller.Instance != null && CharacterStatsUI_Controller.Instance.IsOpen();
+        if (isUIOpen || isActionInProgress) return;
 
         HandleMovement();
         HandleInput();
@@ -61,10 +62,7 @@ public class PlayerController : MonoBehaviour
         Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out RaycastHit hit, 100f, attackableLayers))
         {
-            if (hit.collider.TryGetComponent(out MonsterController monster))
-            {
-                StartAttack(monster);
-            }
+            if (hit.collider.TryGetComponent(out MonsterController monster)) StartAttack(monster);
         }
     }
 
@@ -91,7 +89,6 @@ public class PlayerController : MonoBehaviour
         currentTarget = null;
     }
 
-    #region Unchanged Full Methods
     private void InitializeUserInterfaces()
     {
         PlayerHUD_Controller.Instance?.InitializeHUD(myStats);
@@ -99,14 +96,7 @@ public class PlayerController : MonoBehaviour
         SkillBar_Controller.Instance?.Initialize(skillHolder);
         QuestTracker_Controller.Instance?.Initialize(GetComponent<QuestLog>());
     }
-    private void AddTestContent()
-    {
-        SkillData testSkill = Resources.Load<SkillData>("Data/Skills/Güçlü Vuruþ");
-        if (testSkill != null) { skillHolder.LearnSkill(testSkill); }
 
-        QuestData testQuest = Resources.Load<QuestData>("Data/Quests/Kurt Avý");
-        if (testQuest != null) { GetComponent<QuestLog>().AddQuest(testQuest); }
-    }
     private void HandleMovement()
     {
         float horizontal = Input.GetAxis("Horizontal");
@@ -116,6 +106,13 @@ public class PlayerController : MonoBehaviour
         animator.SetBool("IsMoving", moveDirection.magnitude > 0.1f);
         if (moveDirection != Vector3.zero) { transform.rotation = Quaternion.LookRotation(moveDirection); }
     }
+
+    private void AddTestContent()
+    {
+        skillHolder.LearnSkill(Resources.Load<SkillData>("Data/Skills/Güçlü Vuruþ"));
+        GetComponent<QuestLog>().AddQuest(Resources.Load<QuestData>("Data/Quests/Kurt Avý"));
+    }
+
     private void AttemptToUseSkill(int skillIndex)
     {
         Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
@@ -128,5 +125,4 @@ public class PlayerController : MonoBehaviour
             }
         }
     }
-    #endregion
 }

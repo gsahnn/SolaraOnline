@@ -2,33 +2,33 @@ using UnityEngine;
 
 public class PlayerInteraction : MonoBehaviour
 {
-    [Header("Etkileþim Ayarlarý")]
-    [SerializeField] private float interactionDistance = 2.5f;
+    [SerializeField] private float interactionDistance = 3f;
     [SerializeField] private LayerMask interactableLayer;
-    [SerializeField] private Transform interactionRayOrigin; // Iþýnýn nereden baþlayacaðýný belirlemek için
 
     private Interactable currentInteractable;
+    private Camera mainCamera;
+
+    private void Start()
+    {
+        mainCamera = Camera.main;
+    }
 
     void Update()
     {
-        CheckForInteractable();
-
+        // Girdi kontrolünü buraya alýyoruz.
         if (Input.GetKeyDown(KeyCode.E) && currentInteractable != null)
         {
-            // Interact fonksiyonuna, etkileþime girenin kim olduðunu (yani bu objeyi) bildir.
             currentInteractable.Interact(this.gameObject);
         }
 
+        CheckForInteractable();
+    }
+
     void CheckForInteractable()
     {
-        // Iþýnýn baþlangýç noktasýný ve yönünü karakterden alýyoruz.
-        Vector3 rayOrigin = interactionRayOrigin.position;
-        Vector3 rayDirection = transform.forward;
-
-        // Iþýný sahnede görselleþtirelim ki nereye gittiðini görelim.
-        Debug.DrawRay(rayOrigin, rayDirection * interactionDistance, Color.cyan);
-
-        if (Physics.Raycast(rayOrigin, rayDirection, out RaycastHit hit, interactionDistance, interactableLayer))
+        // Iþýný kameradan deðil, karakterin kendisinden, baktýðý yöne doðru atalým.
+        // Bu, izometrik kamera için daha güvenilirdir.
+        if (Physics.Raycast(transform.position + Vector3.up, transform.forward, out RaycastHit hit, interactionDistance, interactableLayer))
         {
             if (hit.collider.TryGetComponent(out Interactable interactable))
             {
@@ -42,12 +42,10 @@ public class PlayerInteraction : MonoBehaviour
             }
         }
 
-        // Iþýn hiçbir þeye çarpmýyorsa veya mevcut hedef menzilden çýktýysa, prompt'u gizle.
         if (currentInteractable != null)
         {
             currentInteractable.HidePrompt();
             currentInteractable = null;
         }
     }
-}
 }
