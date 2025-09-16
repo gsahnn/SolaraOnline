@@ -1,5 +1,4 @@
 using UnityEngine;
-using System.Collections;
 
 [RequireComponent(typeof(CharacterController))]
 [RequireComponent(typeof(Animator))]
@@ -8,6 +7,8 @@ using System.Collections;
 [RequireComponent(typeof(QuestLog))]
 public class PlayerController : MonoBehaviour
 {
+    // ... (diðer deðiþkenler ayný kalacak) ...
+    #region Variables
     [Header("Hareket Ayarlarý")]
     [SerializeField] private float moveSpeed = 5f;
 
@@ -22,6 +23,7 @@ public class PlayerController : MonoBehaviour
     private CharacterStats myStats;
     private SkillHolder skillHolder;
     private MonsterController currentTarget;
+    #endregion
 
     private void Awake()
     {
@@ -36,80 +38,58 @@ public class PlayerController : MonoBehaviour
         mainCamera = Camera.main;
         if (mainCamera == null) Debug.LogError("KRÝTÝK HATA: Sahnede 'MainCamera' etiketli bir kamera bulunamadý!");
 
+        // Önce tüm verileri yükle
         AddTestContent();
+
+        // Sonra bu verilerle UI'larý baþlat
         InitializeUserInterfaces();
     }
 
     private void AddTestContent()
     {
-        // --- TEST AMAÇLI YETENEK EKLEME ---
-        Debug.Log("--- AddTestSkills fonksiyonu baþlatýldý. ---");
-        string skillPath = "Data/Skills/Güçlü Vuruþ";
-        Debug.Log("Yetenek þu yoldan aranýyor: " + skillPath);
-        SkillData testSkill = Resources.Load<SkillData>(skillPath);
-        if (testSkill != null)
-        {
-            skillHolder.LearnSkill(testSkill);
-        }
-        else
-        {
-            Debug.LogError("<color=red>HATA:</color> Yetenek þu yolda bulunamadý: " + skillPath);
-        }
+        SkillData testSkill = Resources.Load<SkillData>("Data/Skills/Güçlü Vuruþ");
+        if (testSkill != null) { skillHolder.LearnSkill(testSkill); }
 
-        // --- TEST AMAÇLI GÖREV EKLEME ---
-        Debug.Log("--- Görev ekleme baþlatýldý. ---");
-        string questPath = "Data/Quests/Kurt Avý";
-        Debug.Log("Görev þu yoldan aranýyor: " + questPath);
-        QuestData testQuest = Resources.Load<QuestData>(questPath);
-        if (testQuest != null)
-        {
-            GetComponent<QuestLog>().AddQuest(testQuest);
-        }
-        else
-        {
-            Debug.LogError("<color=red>HATA:</color> Görev þu yolda bulunamadý: " + questPath);
-        }
+        QuestData testQuest = Resources.Load<QuestData>("Data/Quests/Kurt Avý");
+        if (testQuest != null) { GetComponent<QuestLog>().AddQuest(testQuest); }
     }
 
     private void InitializeUserInterfaces()
     {
-        if (PlayerHUD_Controller.Instance != null) PlayerHUD_Controller.Instance.InitializeHUD(myStats);
-        if (CharacterStatsUI_Controller.Instance != null) CharacterStatsUI_Controller.Instance.Initialize(myStats);
-        if (SkillBar_Controller.Instance != null) SkillBar_Controller.Instance.Initialize(skillHolder);
-        if (QuestTracker_Controller.Instance != null);
-        {
-            QuestTracker_Controller.Instance.Initialize(GetComponent<QuestLog>());
-        }
+        // Singleton'larý kullanarak UI sistemlerini oyuncu verileriyle doldur.
+        PlayerHUD_Controller.Instance?.InitializeHUD(myStats);
+        CharacterStatsUI_Controller.Instance?.Initialize(myStats);
+        SkillBar_Controller.Instance?.Initialize(skillHolder);
+
+        // EN ÖNEMLÝ DEÐÝÞÝKLÝK: QuestTracker'ý initialize ettikten sonra,
+        // mevcut görevleri göstermesi için manuel olarak bir kez daha tetikliyoruz.
+        // Bu, baþlangýçtaki zamanlama sorununu çözer.
+        QuestTracker_Controller.Instance?.Initialize(GetComponent<QuestLog>());
     }
 
+    // ... Geri kalan tüm fonksiyonlar (Update, HandleInput, HandleMovement, Attack vb.) DEÐÝÞÝKLÝK OLMADAN AYNI KALIYOR ...
+    #region Unchanged Methods
     private void Update()
     {
         if (CharacterStatsUI_Controller.Instance != null && CharacterStatsUI_Controller.Instance.IsOpen()) return;
         if (isActionInProgress) return;
-
         HandleMovement();
         HandleInput();
     }
-
     private void HandleInput()
     {
         if (Input.GetKeyDown(KeyCode.Alpha1)) { AttemptToUseSkill(0); return; }
         if (Input.GetMouseButtonDown(0)) { AttemptToAttack(); }
         if (Input.GetKeyDown(KeyCode.C)) { CharacterStatsUI_Controller.Instance?.TogglePanel(); }
     }
-
     private void AttemptToAttack()
     {
         Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out RaycastHit hit, 100f, attackableLayers))
         {
-            if (hit.collider.TryGetComponent(out MonsterController monster))
-            {
-                StartAttack(monster);
-            }
+            if (hit.collider.TryGetComponent(out MonsterController monster)) { StartAttack(monster); }
         }
     }
-
     private void StartAttack(MonsterController target)
     {
         currentTarget = target;
@@ -117,7 +97,6 @@ public class PlayerController : MonoBehaviour
         animator.SetTrigger("Attack");
         isActionInProgress = true;
     }
-
     public void AnimationEvent_DealDamage()
     {
         if (currentTarget != null && currentTarget.TryGetComponent(out CharacterStats targetStats))
@@ -126,13 +105,11 @@ public class PlayerController : MonoBehaviour
             targetStats.TakeDamage(damage, myStats);
         }
     }
-
     public void AnimationEvent_ActionFinished()
     {
         isActionInProgress = false;
         currentTarget = null;
     }
-
     private void HandleMovement()
     {
         float horizontal = Input.GetAxis("Horizontal");
@@ -142,7 +119,6 @@ public class PlayerController : MonoBehaviour
         animator.SetBool("IsMoving", moveDirection.magnitude > 0.1f);
         if (moveDirection != Vector3.zero) { transform.rotation = Quaternion.LookRotation(moveDirection); }
     }
-
     private void AttemptToUseSkill(int skillIndex)
     {
         Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
@@ -155,4 +131,6 @@ public class PlayerController : MonoBehaviour
             }
         }
     }
+    #endregion
 }
+

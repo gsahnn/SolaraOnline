@@ -12,33 +12,22 @@ public class QuestLog : MonoBehaviour
     {
         if (newQuest == null || activeQuests.Any(q => q.questData == newQuest)) return;
 
-        QuestStatus newQuestStatus = new QuestStatus(newQuest);
-
-        // Yeni görevin durum güncellemelerini dinlemeye baþla.
-        newQuestStatus.OnQuestStatusUpdated += HandleQuestUpdate;
-
-        activeQuests.Add(newQuestStatus);
-        Debug.Log("<color=cyan>QUEST LOG:</color> '" + newQuest.questName + "' görevi eklendi.");
-
-        // Görev eklendiðinde UI'a haber ver.
-        OnQuestLogUpdated?.Invoke();
-    }
-
-    // Bir QuestStatus güncellendiðinde bu fonksiyon tetiklenir.
-    private void HandleQuestUpdate(QuestStatus questStatus)
-    {
-        // Gelen bilgiyi doðrudan yukarýya, UI'a iletiyoruz.
+        activeQuests.Add(new QuestStatus(newQuest));
         OnQuestLogUpdated?.Invoke();
     }
 
     public void AddQuestProgress(string targetName, int amount)
     {
-        foreach (var quest in activeQuests)
+        bool questUpdated = false;
+        foreach (var quest in activeQuests.Where(q => q.questData.targetName == targetName && !q.isCompleted))
         {
-            if (quest.questData.targetName == targetName)
-            {
-                quest.AddProgress(amount);
-            }
+            quest.AddProgress(amount);
+            questUpdated = true;
+        }
+
+        if (questUpdated)
+        {
+            OnQuestLogUpdated?.Invoke();
         }
     }
 }
