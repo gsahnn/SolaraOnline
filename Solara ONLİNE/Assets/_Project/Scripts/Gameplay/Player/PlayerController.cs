@@ -11,9 +11,10 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float moveSpeed = 5f;
 
     [Header("Savaþ Ayarlarý")]
-    [SerializeField] private LayerMask attackableLayers; // Saldýrýlabilir katmanlarý Inspector'dan seçeceðiz
+    [SerializeField] private LayerMask attackableLayers;
 
-    // ... (diðer deðiþkenler ayný) ...
+    private bool isActionInProgress = false;
+
     private CharacterController controller;
     private Animator animator;
     private Camera mainCamera;
@@ -21,8 +22,6 @@ public class PlayerController : MonoBehaviour
     private SkillHolder skillHolder;
     private MonsterController currentTarget;
 
-    // ... Awake() ve Start() fonksiyonlarý ayný ...
-    #region Startup
     private void Awake()
     {
         controller = GetComponent<CharacterController>();
@@ -30,23 +29,23 @@ public class PlayerController : MonoBehaviour
         myStats = GetComponent<CharacterStats>();
         skillHolder = GetComponent<SkillHolder>();
     }
+
     private void Start()
     {
         mainCamera = Camera.main;
-        if (mainCamera == null) Debug.LogError("Sahnede 'MainCamera' etiketli bir kamera bulunamadý!");
+        if (mainCamera == null) Debug.LogError("KRÝTÝK HATA: Sahnede 'MainCamera' etiketli bir kamera bulunamadý!");
+
         AddTestSkills();
         InitializeUserInterfaces();
     }
-    #endregion
 
     private void Update()
     {
         if (CharacterStatsUI_Controller.Instance != null && CharacterStatsUI_Controller.Instance.IsOpen()) return;
-        if (!animator.GetCurrentAnimatorStateInfo(0).IsName("Attack"))
-        {
-            HandleMovement();
-            HandleInput();
-        }
+        if (isActionInProgress) return;
+
+        HandleMovement();
+        HandleInput();
     }
 
     private void HandleInput()
@@ -59,7 +58,6 @@ public class PlayerController : MonoBehaviour
     private void AttemptToAttack()
     {
         Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-        // Raycast'e hangi katmanlarý tarayacaðýný söylüyoruz.
         if (Physics.Raycast(ray, out RaycastHit hit, 100f, attackableLayers))
         {
             if (hit.collider.TryGetComponent(out MonsterController monster))
@@ -69,10 +67,54 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    private void StartAttack(MonsterController target)
+    {
+        currentTarget = target;
+        transform.LookAt(target.transform.position);
+
+        animator.SetTrigger("Attack");
+        isActionInProgress = true;
+    }
+
+    public void AnimationEvent_DealDamage()
+    {
+        if (currentTarget != null && currentTarget.TryGetComponent(out CharacterStats targetStats))
+        {
+            int damage = Random.Range(myStats.minDamage, myStats.maxDamage + 1);
+            targetStats.TakeDamage(damage, myStats);
+        }
+    }
+
+    public void AnimationEvent_ActionFinished()
+    {
+        isActionInProgress = false;
+        currentTarget = null;
+    }
+
+    #region Unchanged Full Methods
+    private void InitializeUserInterfaces()
+    {
+        if (PlayerHUD_Controller.Instance != null) PlayerHUD_Controller.Instance.InitializeHUD(myStats);
+        if (CharacterStatsUI_Controller.Instance != null) CharacterStatsUI_Controller.Instance.Initialize(myStats);
+        if (SkillBar_Controller.Instance != null) SkillBar_Controller.Instance.Initialize(skillHolder);
+    }
+    private void AddTestSkills()
+    {
+        SkillData testSkill = Resources.Load<SkillData>("Data/Skills/Güçlü Vuruþ");
+        if (testSkill != null) { skillHolder.LearnSkill(testSkill); }
+    }
+    private void HandleMovement()
+    {
+        float horizontal = Input.GetAxis("Horizontal");
+        float vertical = Input.GetAxis("Vertical");
+        Vector3 moveDirection = new Vector3(horizontal, 0, vertical).normalized;
+        controller.Move(moveDirection * moveSpeed * Time.deltaTime);
+        animator.SetBool("IsMoving", moveDirection.magnitude > 0.1f);
+        if (moveDirection != Vector3.zero) { transform.rotation = Quaternion.LookRotation(moveDirection); }
+    }
     private void AttemptToUseSkill(int skillIndex)
     {
         Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-        // Raycast'e hangi katmanlarý tarayacaðýný söylüyoruz.
         if (Physics.Raycast(ray, out RaycastHit hit, 100f, attackableLayers))
         {
             if (hit.collider.TryGetComponent(out MonsterController monster))
@@ -82,13 +124,5 @@ public class PlayerController : MonoBehaviour
             }
         }
     }
-
-    // Deðiþmeyen diðer tüm kodlar ayný
-    #region Unchanged Methods
-    private void InitializeUserInterfaces() { /*...*/ }
-    private void AddTestSkills() { /*...*/ }
-    private void HandleMovement() { /*...*/ }
-    private void StartAttack(MonsterController target) { /*...*/ }
-    public void AnimationEvent_DealDamage() { /*...*/ }
     #endregion
 }
