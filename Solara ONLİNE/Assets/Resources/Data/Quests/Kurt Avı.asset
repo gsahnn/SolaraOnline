@@ -16,8 +16,10 @@ MonoBehaviour:
   description: " K\xF6y\xFCn etraf\u0131ndaki kurtlar t\xFCccarlara sald\u0131r\u0131yor.
     L\xFCtfen 1 tanesini temizle."
   startDialogue: "Ho\u015F geldin macerac\u0131. K\xF6y\xFCn etraf\u0131ndaki kurtlar
-    kervanlara sald\u0131r\u0131yor. Bize yard\u0131m edip 5 tanesini avlar m\u0131s\u0131n"
-  inProgressDialogue: "Hala 5 kurdu avlaman\u0131 bekliyorum. L\xFCtfen acele et."
+    e\u015F\u015Fekleri sikmeye kalk\u0131yor. Bize yard\u0131m edip 5 tanesinin
+    g\xF6t\xFCne m\u0131zrak sokar m\u0131s\u0131n"
+  inProgressDialogue: "Hala 5 kurdu m\u0131zraklaman\u0131 bekliyorum. L\xFCtfen
+    acele et."
   completedDialogue: "Harika i\u015F \xE7\u0131kard\u0131n! \u0130\u015Fte \xF6d\xFCl\xFCn.
     Yard\u0131mlar\u0131n i\xE7in te\u015Fekk\xFCrler."
   goalType: 0
