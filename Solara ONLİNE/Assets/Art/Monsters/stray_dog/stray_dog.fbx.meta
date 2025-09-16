@@ -1,9 +1,14 @@
 fileFormatVersion: 2
-guid: dec350e5eba06c944a40238400803880
+guid: e21ee5c303a70ed44b43ae4eec8c1e30
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: wolf.002
+    second: {fileID: 2100000, guid: 21c00292bd200dd48bf41e4c74f2c61b, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
