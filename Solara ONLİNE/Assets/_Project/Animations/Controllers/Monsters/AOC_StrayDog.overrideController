@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!221 &22100000
+AnimatorOverrideController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: AOC_StrayDog
+  m_Controller: {fileID: 9100000, guid: 18c446f1abc709d429ba91abffaba92a, type: 2}
+  m_Clips:
+  - m_OriginalClip: {fileID: 7400000, guid: 5840367f292f6fc4e90710495777ca2a, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 5840367f292f6fc4e90710495777ca2a, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: 69fb0661deb712644af8cb4bb10649b2, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 69fb0661deb712644af8cb4bb10649b2, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: 825e869dbe860d74eb9ce947ad0e9edb, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 825e869dbe860d74eb9ce947ad0e9edb, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: 5fb1d852b52df334498c907bed3293a0, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 5fb1d852b52df334498c907bed3293a0, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: bb41ab9d9f734004696e92891ed6e46f, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: bb41ab9d9f734004696e92891ed6e46f, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: 38c671d9bb2c7b64995ed23463cdf313, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 38c671d9bb2c7b64995ed23463cdf313, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: d2667b24bb28bd64abefccfb98c34912, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: d2667b24bb28bd64abefccfb98c34912, type: 2}
