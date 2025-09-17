@@ -12,7 +12,7 @@ public class MonsterController : MonoBehaviour
 
     private void UpdateMovementAndRotation()
     {
-        animator.SetFloat("Speed", agent.velocity.magnitude / agent.speed, 0.1f, Time.deltaTime);
+        animator.SetFloat("Speed", agent.velocity.magnitude / agent.speed);
 
         if (agent.velocity.magnitude > 0.1f)
         {
