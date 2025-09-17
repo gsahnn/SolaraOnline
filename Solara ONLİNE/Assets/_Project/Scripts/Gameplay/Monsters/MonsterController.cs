@@ -1,6 +1,13 @@
 using UnityEngine;
 using UnityEngine.AI;
 using System.Collections;
+using System.Linq; // FirstOrDefault için
+
+public enum AITemperament
+{
+    Passive,
+    Aggressive
+}
 
 public enum AIState
 {
@@ -14,12 +21,17 @@ public enum AIState
 public class MonsterController : MonoBehaviour
 {
     [Header("Yapay Zeka Ayarlarý")]
+    [SerializeField] private AITemperament temperament = AITemperament.Aggressive;
     [SerializeField] private AIState currentState = AIState.Patrolling;
     [SerializeField] private float sightRange = 10f;
     [SerializeField] private float attackRange = 2f;
     [SerializeField] private float patrolRadius = 15f;
     [SerializeField] private float timeBetweenAttacks = 2f;
     [SerializeField] private float rotationSpeed = 10f;
+
+    [Header("Loot Ayarlarý")]
+    [SerializeField] private LootTable lootTable;
+    [SerializeField] private GameObject itemPickupPrefab;
 
     private NavMeshAgent agent;
     private CharacterStats myStats;
@@ -38,7 +50,6 @@ public class MonsterController : MonoBehaviour
 
         agent.updateRotation = false;
 
-        // CharacterStats'taki olaylarý dinlemeye baþla.
         myStats.OnDeath += HandleDeath;
         myStats.OnDamageTaken += OnDamageTaken;
     }
@@ -75,7 +86,7 @@ public class MonsterController : MonoBehaviour
 
     private void UpdateMovementAndRotation()
     {
-        if (agent.velocity.magnitude > 0.1f)
+        if (agent.velocity.magnitude > 0.1f && agent.remainingDistance > agent.stoppingDistance)
         {
             Quaternion lookRotation = Quaternion.LookRotation(agent.velocity.normalized);
             transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * rotationSpeed);
@@ -91,7 +102,12 @@ public class MonsterController : MonoBehaviour
 
     private void UpdatePatrollingState()
     {
-        if (CanSeePlayer()) { ChangeState(AIState.Chasing); return; }
+        if (temperament == AITemperament.Aggressive && CanSeePlayer())
+        {
+            ChangeState(AIState.Chasing);
+            return;
+        }
+
         if (!agent.pathPending && agent.remainingDistance < 0.5f)
         {
             Vector3 randomPoint = startPosition + Random.insideUnitSphere * patrolRadius;
@@ -121,16 +137,17 @@ public class MonsterController : MonoBehaviour
 
     private void UpdateAttackingState()
     {
-        if (playerTarget == null || Vector3.Distance(transform.position, playerTarget.position) > attackRange)
+        if (playerTarget == null || Vector3.Distance(transform.position, playerTarget.position) > attackRange + 0.5f)
         {
             ChangeState(AIState.Chasing);
             return;
         }
 
-        agent.ResetPath();
+        agent.SetDestination(transform.position);
+
         Vector3 directionToPlayer = (playerTarget.position - transform.position).normalized;
         Quaternion lookRotation = Quaternion.LookRotation(new Vector3(directionToPlayer.x, 0, directionToPlayer.z));
-        transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * rotationSpeed * 2);
+        transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * rotationSpeed);
 
         if (attackCooldownTimer <= 0)
         {
@@ -141,7 +158,7 @@ public class MonsterController : MonoBehaviour
 
     public void AnimationEvent_MonsterDealDamage()
     {
-        if (playerTarget != null)
+        if (playerTarget != null && Vector3.Distance(transform.position, playerTarget.position) <= attackRange + 0.5f)
         {
             playerTarget.GetComponent<CharacterStats>().TakeDamage(Random.Range(myStats.minDamage, myStats.maxDamage + 1), myStats);
         }
@@ -149,10 +166,10 @@ public class MonsterController : MonoBehaviour
 
     private void OnDamageTaken()
     {
-        if (currentState != AIState.Attacking && currentState != AIState.Dead)
+        if (currentState != AIState.Dead)
         {
-            animator.SetTrigger("Damage");
-            agent.ResetPath();
+            ChangeState(AIState.Chasing);
+            if (currentState != AIState.Attacking) animator.SetTrigger("Damage");
         }
     }
 
@@ -167,7 +184,7 @@ public class MonsterController : MonoBehaviour
 
         if (killer != null)
         {
-            killer.AddExperience(myStats.experienceGranted); // experienceGranted artýk CharacterStats'tan geliyor.
+            killer.AddExperience(myStats.experienceGranted);
             if (killer.TryGetComponent(out QuestLog questLog))
             {
                 questLog.AddQuestProgress(this.gameObject.name, 1);
@@ -186,12 +203,31 @@ public class MonsterController : MonoBehaviour
     private bool CanSeePlayer()
     {
         if (playerTarget == null) return false;
+
         return Vector3.Distance(transform.position, playerTarget.position) <= sightRange;
     }
 
-    [SerializeField] private LootTable lootTable;
-    [SerializeField] private GameObject itemPickupPrefab;
-    private void DropLoot() { /* ... */ }
-    private void InstantiateLoot(ItemData itemDataToDrop) { /* ... */ }
+    private void DropLoot()
+    {
+        if (lootTable == null) return;
+        foreach (var lootItem in lootTable.possibleLoot)
+        {
+            float randomChance = Random.Range(0f, 100f);
+            if (randomChance <= lootItem.dropChance)
+            {
+                InstantiateLoot(lootItem.itemData);
+            }
+        }
+    }
+
+    private void InstantiateLoot(ItemData itemDataToDrop)
+    {
+        if (itemPickupPrefab != null)
+        {
+            GameObject droppedItemObject = Instantiate(itemPickupPrefab, transform.position, Quaternion.identity);
+            ItemPickup pickupScript = droppedItemObject.GetComponent<ItemPickup>();
+            pickupScript.Initialize(itemDataToDrop, 1);
+        }
+    }
 }
 
