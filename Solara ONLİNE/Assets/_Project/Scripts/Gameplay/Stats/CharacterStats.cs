@@ -3,6 +3,11 @@ using System;
 
 public class CharacterStats : MonoBehaviour
 {
+    [Header("Ekonomi")]
+    public int gold = 1000; // Baþlangýç parasý
+
+
+
     [Header("Seviye ve Tecrübe")]
     public int level = 1;
     public int currentExp = 0;

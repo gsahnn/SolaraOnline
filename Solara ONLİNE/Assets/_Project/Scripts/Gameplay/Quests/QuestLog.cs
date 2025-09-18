@@ -59,6 +59,9 @@ public class QuestLog : MonoBehaviour
             if (playerStats != null)
             {
                 playerStats.AddExperience(questToComplete.questData.experienceReward);
+                playerStats.gold += questToComplete.questData.goldReward;
+
+                Debug.Log(questToComplete.questData.goldReward + " altýn kazanýldý!");
                 // Altýn ekleme sistemi henüz yok, þimdilik Debug.Log ile yapalým.
                 Debug.Log(questToComplete.questData.goldReward + " altýn kazanýldý!");
             }

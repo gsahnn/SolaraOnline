@@ -12,4 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 35f2f49bdff2c80419cb09607c90d51b, type: 3}
   m_Name: "Silah D\xFCkkan\u0131"
   m_EditorClassIdentifier: Assembly-CSharp::ShopData
-  itemsForSale: []
+  itemsForSale:
+  - item: {fileID: 11400000, guid: f80be8c638899c046a20474188c3be6a, type: 2}
+    price: 250
