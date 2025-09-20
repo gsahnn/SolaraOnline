@@ -1,93 +1,129 @@
 using UnityEngine;
 using System.Collections.Generic;
 using TMPro;
+using UnityEngine.UI; // Button'larý kodda kullanmak için bu satýr gerekli!
 
 public class ShopSystem : MonoBehaviour
 {
     public static ShopSystem Instance { get; private set; }
 
-    [Header("UI Referanslarý - Genel")]
+    [Header("Ana Paneller ve Konteynerlar")]
     [SerializeField] private GameObject shopPanel;
-    [SerializeField] private TextMeshProUGUI playerGoldText;
+    [SerializeField] private Transform vendorItemContainer;
+    [SerializeField] private Transform playerInventoryContainer;
 
-    [Header("UI Referanslarý - Dükkan Bölümü")]
-    [SerializeField] private Transform shopSlotContainer;
+    [Header("Prefab")]
     [SerializeField] private GameObject shopSlotPrefab;
 
-    [Header("UI Referanslarý - Oyuncu Envanteri Bölümü")]
-    [SerializeField] private Transform playerInventoryContainer;
-    [SerializeField] private GameObject playerInventorySlotPrefab; // Ayrý bir prefab kullanmak daha temiz.
+    [Header("Butonlar ve Detaylar")]
+    [SerializeField] private Button buyButton; // "Satýn Al" butonu
+    [SerializeField] private Button sellButton; // "Sat" butonu
+    [SerializeField] private Button closeButton; // "Kapat" butonu
+    [SerializeField] private TextMeshProUGUI playerGoldText;
 
     private PlayerInventory playerInventory;
     private CharacterStats playerStats;
-    private ShopData currentShopData;
+    private ShopSlotController selectedSlot;
 
     private List<GameObject> spawnedShopSlots = new List<GameObject>();
     private List<GameObject> spawnedPlayerSlots = new List<GameObject>();
 
-    private void Awake() { Instance = this; }
+    private void Awake()
+    {
+        if (Instance != null) { Destroy(gameObject); }
+        else { Instance = this; }
+
+        shopPanel.SetActive(false);
+    }
 
     private void Start()
     {
-        shopPanel.SetActive(false);
+        // --- BUTON ONCLICK ATAMALARI BURADA YAPILIYOR ---
+        // Bu, Inspector'dan atamayý unutsak bile, kodun butonlara ne yapacaðýný
+        // söylemesini garanti altýna alýr.
+
+        if (buyButton != null)
+            buyButton.onClick.AddListener(ConfirmPurchase);
+
+        if (sellButton != null)
+            sellButton.onClick.AddListener(ConfirmSale);
+
+        if (closeButton != null)
+            closeButton.onClick.AddListener(CloseShop);
+        // ----------------------------------------------------
     }
 
     public void OpenShop(ShopData shopData, PlayerInventory inv)
     {
         playerInventory = inv;
         playerStats = inv.GetComponent<CharacterStats>();
-        currentShopData = shopData;
-
         shopPanel.SetActive(true);
 
-        // Oyuncunun envanterindeki deðiþiklikleri dinlemeye baþla.
-        playerInventory.inventory.OnInventoryUpdated += RefreshPlayerInventory;
+        playerInventory.inventory.OnInventoryUpdated += RefreshPlayerInventoryUI;
 
-        RefreshShopItems();
-        RefreshPlayerInventory();
-        UpdatePlayerGoldUI();
+        RefreshVendorUI(shopData);
+        RefreshPlayerInventoryUI();
+        DeselectCurrent(); // Dükkan açýldýðýnda hiçbir þeyin seçili olmadýðýndan emin ol.
     }
 
     public void CloseShop()
     {
-        shopPanel.SetActive(false);
-        // Dinlemeyi býrak ki gereksiz yere çalýþmasýn.
         if (playerInventory != null)
-            playerInventory.inventory.OnInventoryUpdated -= RefreshPlayerInventory;
+            playerInventory.inventory.OnInventoryUpdated -= RefreshPlayerInventoryUI;
+        shopPanel.SetActive(false);
     }
 
-    private void RefreshShopItems()
+    private void RefreshVendorUI(ShopData shopData)
     {
         foreach (var slot in spawnedShopSlots) Destroy(slot);
         spawnedShopSlots.Clear();
 
-        foreach (ShopItem shopItem in currentShopData.itemsForSale)
+        foreach (var shopItem in shopData.itemsForSale)
         {
-            GameObject newSlot = Instantiate(shopSlotPrefab, shopSlotContainer);
-            newSlot.GetComponent<ShopSlot_UI_Controller>().SetItem(shopItem);
-            spawnedShopSlots.Add(newSlot);
+            var slotGO = Instantiate(shopSlotPrefab, vendorItemContainer);
+            slotGO.GetComponent<ShopSlotController>().SetupVendorSlot(shopItem);
         }
     }
 
-    private void RefreshPlayerInventory()
+    private void RefreshPlayerInventoryUI()
     {
         foreach (var slot in spawnedPlayerSlots) Destroy(slot);
         spawnedPlayerSlots.Clear();
 
-        foreach (InventorySlot invSlot in playerInventory.inventory.InventorySlots)
+        if (playerInventory == null) return;
+        foreach (var invSlot in playerInventory.inventory.InventorySlots)
         {
-            GameObject newSlotGO = Instantiate(playerInventorySlotPrefab, playerInventoryContainer);
-            var controller = newSlotGO.GetComponent<Shop_PlayerSlot_Controller>();
-            controller.SetSlot(invSlot);
-            controller.AddListener(AttemptToSellItem);
-
-            spawnedPlayerSlots.Add(newSlotGO);
+            var slotGO = Instantiate(shopSlotPrefab, playerInventoryContainer);
+            slotGO.GetComponent<ShopSlotController>().SetupPlayerSlot(invSlot);
         }
         UpdatePlayerGoldUI();
     }
 
-    public void AttemptToBuyItem(ShopItem itemToBuy)
+    public void OnSlotSelected(ShopSlotController slotController)
     {
+        DeselectCurrent();
+        selectedSlot = slotController;
+        selectedSlot.Select();
+
+        object item = selectedSlot.GetHeldItem();
+        buyButton.interactable = item is ShopItem;
+        sellButton.interactable = item is InventorySlot && ((InventorySlot)item).itemData != null;
+    }
+
+    private void DeselectCurrent()
+    {
+        if (selectedSlot != null) selectedSlot.Deselect();
+        selectedSlot = null;
+        buyButton.interactable = false;
+        sellButton.interactable = false;
+    }
+
+    private void ConfirmPurchase()
+    {
+        if (selectedSlot == null || !(selectedSlot.GetHeldItem() is ShopItem)) return;
+
+        ShopItem itemToBuy = (ShopItem)selectedSlot.GetHeldItem();
+
         if (playerStats.gold >= itemToBuy.price)
         {
             if (playerInventory.inventory.AddToInventory(itemToBuy.item, 1))
@@ -97,27 +133,25 @@ public class ShopSystem : MonoBehaviour
         }
     }
 
-    // YENÝ FONKSÝYON: Eþya Satma
-    public void AttemptToSellItem(InventorySlot itemToSell)
+    private void ConfirmSale()
     {
+        if (selectedSlot == null || !(selectedSlot.GetHeldItem() is InventorySlot)) return;
+
+        InventorySlot itemToSell = (InventorySlot)selectedSlot.GetHeldItem();
+
         if (itemToSell.itemData != null)
         {
-            // Oyuncunun parasýna eþyanýn satýþ fiyatýný ekle.
             playerStats.gold += itemToSell.itemData.sellPrice;
-
-            // Eþyayý envanterden kaldýr.
             playerInventory.inventory.RemoveFromInventory(itemToSell);
-
-            // Satýþ sonrasý hem envanteri hem de altýn miktarýný anýnda güncelle.
-            // (Event'ler bunu otomatik yapacak)
+            DeselectCurrent();
         }
     }
 
     private void UpdatePlayerGoldUI()
     {
-        if (playerGoldText != null)
+        if (playerGoldText != null && playerStats != null)
         {
-            playerGoldText.text = "Altýn: " + playerStats.gold.ToString();
+            playerGoldText.text = playerStats.gold.ToString();
         }
     }
 }

@@ -1,32 +1,67 @@
-// ShopSlot_UI_Controller.cs
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-public class ShopSlot_UI_Controller : MonoBehaviour
+[RequireComponent(typeof(Button))] // Bu objeye Button eklenmesini zorunlu kýlar.
+public class ShopSlotController : MonoBehaviour
 {
+    [Header("UI Referanslarý")]
     [SerializeField] private Image itemIcon;
-    [SerializeField] private TextMeshProUGUI itemNameText;
-    [SerializeField] private TextMeshProUGUI itemPriceText;
+    [SerializeField] private TextMeshProUGUI stackCountText;
+    [SerializeField] private GameObject selectionOutline; // Seçim çerçevesi
 
-    private ShopItem currentShopItem;
+    private Button button;
+    private object heldItem;
 
-    public void SetItem(ShopItem shopItem)
+    private void Awake()
     {
-        currentShopItem = shopItem;
-
-        itemIcon.sprite = shopItem.item.icon;
-        itemNameText.text = shopItem.item.itemName;
-        itemPriceText.text = shopItem.price.ToString() + " Altýn";
+        // Script uyandýðýnda, kendi üzerindeki Button bileþenini bulur.
+        button = GetComponent<Button>();
+        // Ve bu butona týklandýðýnda OnSlotClicked fonksiyonunu çaðýrmasýný söyler.
+        button.onClick.AddListener(OnSlotClicked);
+        Deselect(); // Baþlangýçta seçili olmasýn.
     }
 
-    // Bu fonksiyon, Inspector'dan bu slotun kendisine atanmýþ olan
-    // bir Button bileþeninin OnClick() olayýna baðlanacak.
-    public void OnClick_BuyItem()
+    // Dükkan eþyasýný göstermek için
+    public void SetupVendorSlot(ShopItem shopItem)
     {
-        if (currentShopItem != null)
+        heldItem = shopItem;
+        var itemData = shopItem.item;
+
+        itemIcon.sprite = itemData.icon;
+        itemIcon.enabled = true;
+        stackCountText.enabled = false;
+        button.interactable = true;
+    }
+
+    // Oyuncu eþyasýný göstermek için
+    public void SetupPlayerSlot(InventorySlot inventorySlot)
+    {
+        heldItem = inventorySlot;
+
+        if (inventorySlot != null && inventorySlot.itemData != null)
         {
-            ShopSystem.Instance.AttemptToBuyItem(currentShopItem);
+            itemIcon.sprite = inventorySlot.itemData.icon;
+            itemIcon.enabled = true;
+            stackCountText.enabled = inventorySlot.stackSize > 1;
+            stackCountText.text = inventorySlot.stackSize.ToString();
+            button.interactable = true;
+        }
+        else
+        {
+            itemIcon.enabled = false;
+            stackCountText.enabled = false;
+            button.interactable = false;
         }
     }
+
+    private void OnSlotClicked()
+    {
+        // Týklandýðýnda, ana ShopSystem'e "Ben seçildim!" diye haber verir.
+        ShopSystem.Instance.OnSlotSelected(this);
+    }
+
+    public void Select() { if (selectionOutline != null) selectionOutline.SetActive(true); }
+    public void Deselect() { if (selectionOutline != null) selectionOutline.SetActive(false); }
+    public object GetHeldItem() { return heldItem; }
 }
