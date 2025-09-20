@@ -1,21 +1,20 @@
-// InventorySystem.cs
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using System.Linq;
 
-[Serializable] // Inspector'da görülebilmesi için
+[Serializable]
 public class InventorySystem
 {
-    // Envanterdeki tüm slotlarý tutan bir liste.
     [SerializeField] private List<InventorySlot> inventorySlots = new List<InventorySlot>();
     public List<InventorySlot> InventorySlots => inventorySlots;
-
     public int InventorySize => inventorySlots.Count;
 
-    // Envanter her güncellendiðinde tetiklenecek olan event. Arayüz bu event'i dinleyecek.
-    public event Action<InventorySlot> OnInventorySlotChanged;
+    public Action<InventorySlot> OnInventorySlotChanged { get; internal set; }
 
-    // Yapýcý Metot: Belirtilen boyutta bir envanter oluþturur.
+    // Bu event, envantere eþya eklendiðinde veya envanterden eþya silindiðinde tetiklenir.
+    public event Action OnInventoryUpdated;
+
     public InventorySystem(int size)
     {
         inventorySlots = new List<InventorySlot>(size);
@@ -25,60 +24,52 @@ public class InventorySystem
         }
     }
 
-    // Envantere eþya eklemeye çalýþan ana fonksiyon.
     public bool AddToInventory(ItemData item, int amount)
     {
-        // Eklenecek eþyanýn, envanterde zaten var olan ve biriktirilebilen bir slota sýðýp sýðmadýðýný kontrol et.
-        InventorySlot slot = FindSlotForStacking(item);
-        if (slot != null)
+        // Biriktirilebiliyorsa mevcut bir slota eklemeyi dene
+        if (item.isStackable)
         {
-            slot.AddToStack(amount);
-            OnInventorySlotChanged?.Invoke(slot);
+            InventorySlot slotToStack = FindSlotForStacking(item);
+            if (slotToStack != null)
+            {
+                slotToStack.AddToStack(amount);
+                OnInventoryUpdated?.Invoke();
+                return true;
+            }
+        }
+
+        // Boþ bir slot bulup oraya eklemeyi dene
+        InventorySlot emptySlot = FindEmptySlot();
+        if (emptySlot != null)
+        {
+            emptySlot.UpdateSlot(item, amount);
+            OnInventoryUpdated?.Invoke();
             return true;
         }
 
-        // Eðer biriktirilemiyorsa veya mevcut slotlar doluysa, boþ bir slot bul.
-        slot = FindEmptySlot();
-        if (slot != null)
-        {
-            slot.itemData = item;
-            slot.stackSize = amount;
-            OnInventorySlotChanged?.Invoke(slot);
-            return true;
-        }
-
-        // Envanterde hiç yer yoksa, ekleme iþleminin baþarýsýz olduðunu belirt.
+        // Hiç yer yoksa
+        Debug.Log("Envanterde yer yok!");
         return false;
     }
 
-    // Biriktirilebilir bir eþya için uygun slot arayan fonksiyon.
-    private InventorySlot FindSlotForStacking(ItemData item)
+    // YENÝ FONKSÝYON: Envanterden eþya silmek için
+    public void RemoveFromInventory(InventorySlot slotToRemove)
     {
-        // Envanterdeki her slotu kontrol et.
-        foreach (InventorySlot slot in inventorySlots)
-        {
-            // Eðer slot boþ deðilse, ayný eþyayý içeriyorsa, biriktirilebilirse ve slot dolu deðilse...
-            if (slot.itemData != null &&
-                slot.itemData == item &&
-                item.isStackable &&
-                slot.stackSize < item.maxStackSize)
-            {
-                return slot; // O slotu geri döndür.
-            }
-        }
-        return null; // Uygun slot bulunamadý.
+        // Bu fonksiyon, biriktirilebilir eþyalardan sadece bir tane silmek yerine
+        // þimdilik tüm slotu temizler. Bu, satýþ için yeterlidir.
+        slotToRemove.ClearSlot();
+
+        // Deðiþikliði UI'a ve diðer sistemlere bildir.
+        OnInventoryUpdated?.Invoke();
     }
 
-    // Tamamen boþ bir slot arayan fonksiyon.
+    private InventorySlot FindSlotForStacking(ItemData item)
+    {
+        return inventorySlots.FirstOrDefault(s => s.itemData == item && s.stackSize < item.maxStackSize);
+    }
+
     private InventorySlot FindEmptySlot()
     {
-        foreach (InventorySlot slot in inventorySlots)
-        {
-            if (slot.itemData == null)
-            {
-                return slot;
-            }
-        }
-        return null;
+        return inventorySlots.FirstOrDefault(s => s.itemData == null);
     }
 }

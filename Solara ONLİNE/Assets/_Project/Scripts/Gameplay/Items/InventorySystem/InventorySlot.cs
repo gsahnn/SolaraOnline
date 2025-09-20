@@ -27,4 +27,15 @@ public class InventorySlot
     {
         stackSize += amount;
     }
+    public void UpdateSlot(ItemData data, int amount)
+    {
+        itemData = data;
+        stackSize = amount;
+    }
+
+    public void ClearSlot()
+    {
+        itemData = null;
+        stackSize = 0;
+    }
 }

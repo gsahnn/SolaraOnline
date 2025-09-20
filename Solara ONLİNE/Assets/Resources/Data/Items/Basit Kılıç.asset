@@ -12,11 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3016c38e2587c924890954e60e71948d, type: 3}
   m_Name: "Basit K\u0131l\u0131\xE7"
   m_EditorClassIdentifier: Assembly-CSharp::WeaponData
-  itemName: 
+  itemName: "Basit k\u0131l\u0131\xE7"
   icon: {fileID: 21300000, guid: 61e9e2ae792c72e4ca47cc15f20e4128, type: 3}
   description: 
   isStackable: 0
   maxStackSize: 1
+  sellPrice: 125
   bonusHealth: 0
   bonusMana: 0
   bonusStrength: 0

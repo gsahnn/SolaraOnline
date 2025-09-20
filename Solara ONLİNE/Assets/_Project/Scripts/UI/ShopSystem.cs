@@ -6,22 +6,26 @@ public class ShopSystem : MonoBehaviour
 {
     public static ShopSystem Instance { get; private set; }
 
-    [Header("UI Referanslarý")]
+    [Header("UI Referanslarý - Genel")]
     [SerializeField] private GameObject shopPanel;
+    [SerializeField] private TextMeshProUGUI playerGoldText;
+
+    [Header("UI Referanslarý - Dükkan Bölümü")]
     [SerializeField] private Transform shopSlotContainer;
     [SerializeField] private GameObject shopSlotPrefab;
-    [SerializeField] private TextMeshProUGUI playerGoldText; // Oyuncunun parasýný gösterecek metin
+
+    [Header("UI Referanslarý - Oyuncu Envanteri Bölümü")]
+    [SerializeField] private Transform playerInventoryContainer;
+    [SerializeField] private GameObject playerInventorySlotPrefab; // Ayrý bir prefab kullanmak daha temiz.
 
     private PlayerInventory playerInventory;
     private CharacterStats playerStats;
     private ShopData currentShopData;
-    private List<GameObject> spawnedSlots = new List<GameObject>();
 
-    private void Awake()
-    {
-        if (Instance != null) Destroy(gameObject);
-        else Instance = this;
-    }
+    private List<GameObject> spawnedShopSlots = new List<GameObject>();
+    private List<GameObject> spawnedPlayerSlots = new List<GameObject>();
+
+    private void Awake() { Instance = this; }
 
     private void Start()
     {
@@ -35,29 +39,51 @@ public class ShopSystem : MonoBehaviour
         currentShopData = shopData;
 
         shopPanel.SetActive(true);
+
+        // Oyuncunun envanterindeki deðiþiklikleri dinlemeye baþla.
+        playerInventory.inventory.OnInventoryUpdated += RefreshPlayerInventory;
+
         RefreshShopItems();
+        RefreshPlayerInventory();
         UpdatePlayerGoldUI();
     }
 
     public void CloseShop()
     {
         shopPanel.SetActive(false);
+        // Dinlemeyi býrak ki gereksiz yere çalýþmasýn.
+        if (playerInventory != null)
+            playerInventory.inventory.OnInventoryUpdated -= RefreshPlayerInventory;
     }
 
     private void RefreshShopItems()
     {
-        foreach (GameObject slot in spawnedSlots)
-        {
-            Destroy(slot);
-        }
-        spawnedSlots.Clear();
+        foreach (var slot in spawnedShopSlots) Destroy(slot);
+        spawnedShopSlots.Clear();
 
         foreach (ShopItem shopItem in currentShopData.itemsForSale)
         {
             GameObject newSlot = Instantiate(shopSlotPrefab, shopSlotContainer);
             newSlot.GetComponent<ShopSlot_UI_Controller>().SetItem(shopItem);
-            spawnedSlots.Add(newSlot);
+            spawnedShopSlots.Add(newSlot);
         }
+    }
+
+    private void RefreshPlayerInventory()
+    {
+        foreach (var slot in spawnedPlayerSlots) Destroy(slot);
+        spawnedPlayerSlots.Clear();
+
+        foreach (InventorySlot invSlot in playerInventory.inventory.InventorySlots)
+        {
+            GameObject newSlotGO = Instantiate(playerInventorySlotPrefab, playerInventoryContainer);
+            var controller = newSlotGO.GetComponent<Shop_PlayerSlot_Controller>();
+            controller.SetSlot(invSlot);
+            controller.AddListener(AttemptToSellItem);
+
+            spawnedPlayerSlots.Add(newSlotGO);
+        }
+        UpdatePlayerGoldUI();
     }
 
     public void AttemptToBuyItem(ShopItem itemToBuy)
@@ -67,17 +93,23 @@ public class ShopSystem : MonoBehaviour
             if (playerInventory.inventory.AddToInventory(itemToBuy.item, 1))
             {
                 playerStats.gold -= itemToBuy.price;
-                Debug.Log(itemToBuy.item.itemName + " satýn alýndý!");
-                UpdatePlayerGoldUI();
-            }
-            else
-            {
-                Debug.Log("Envanterde yer yok!");
             }
         }
-        else
+    }
+
+    // YENÝ FONKSÝYON: Eþya Satma
+    public void AttemptToSellItem(InventorySlot itemToSell)
+    {
+        if (itemToSell.itemData != null)
         {
-            Debug.Log("Yeterli altýn yok!");
+            // Oyuncunun parasýna eþyanýn satýþ fiyatýný ekle.
+            playerStats.gold += itemToSell.itemData.sellPrice;
+
+            // Eþyayý envanterden kaldýr.
+            playerInventory.inventory.RemoveFromInventory(itemToSell);
+
+            // Satýþ sonrasý hem envanteri hem de altýn miktarýný anýnda güncelle.
+            // (Event'ler bunu otomatik yapacak)
         }
     }
 
