@@ -2,43 +2,53 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-[RequireComponent(typeof(Button))] // Bu objeye Button eklenmesini zorunlu kýlar.
+[RequireComponent(typeof(Button))]
 public class ShopSlotController : MonoBehaviour
 {
-    [Header("UI Referanslarý")]
     [SerializeField] private Image itemIcon;
     [SerializeField] private TextMeshProUGUI stackCountText;
-    [SerializeField] private GameObject selectionOutline; // Seçim çerçevesi
+    [SerializeField] private GameObject selectionOutline;
 
     private Button button;
     private object heldItem;
 
     private void Awake()
     {
-        // Script uyandýðýnda, kendi üzerindeki Button bileþenini bulur.
         button = GetComponent<Button>();
-        // Ve bu butona týklandýðýnda OnSlotClicked fonksiyonunu çaðýrmasýný söyler.
         button.onClick.AddListener(OnSlotClicked);
-        Deselect(); // Baþlangýçta seçili olmasýn.
+        Deselect();
     }
 
     // Dükkan eþyasýný göstermek için
     public void SetupVendorSlot(ShopItem shopItem)
     {
+        Debug.Log("--- SetupVendorSlot çaðrýldý. ---");
+
+        if (shopItem == null) { Debug.LogError("HATA: Gelen shopItem verisi BOÞ (NULL)!"); return; }
+
+        ItemData itemData = shopItem.item;
+
+        if (itemData == null) { Debug.LogError("HATA: shopItem içindeki 'item' verisi BOÞ (NULL)!"); return; }
+
         heldItem = shopItem;
-        var itemData = shopItem.item;
+
+        if (itemIcon == null) { Debug.LogError("HATA: Inspector'da 'itemIcon' referansý atanmamýþ!"); return; }
+
+        Debug.Log("Atanacak item: " + itemData.itemName + ", Ýkonu var mý?: " + (itemData.icon != null));
 
         itemIcon.sprite = itemData.icon;
         itemIcon.enabled = true;
         stackCountText.enabled = false;
         button.interactable = true;
+
+        Debug.Log("--- Slot baþarýyla kuruldu. ---");
     }
 
-    // Oyuncu eþyasýný göstermek için
+    // Oyuncu envanter eþyasýný göstermek için
     public void SetupPlayerSlot(InventorySlot inventorySlot)
     {
+        // ... (bu kýsým þimdilik ayný kalabilir) ...
         heldItem = inventorySlot;
-
         if (inventorySlot != null && inventorySlot.itemData != null)
         {
             itemIcon.sprite = inventorySlot.itemData.icon;
@@ -57,7 +67,6 @@ public class ShopSlotController : MonoBehaviour
 
     private void OnSlotClicked()
     {
-        // Týklandýðýnda, ana ShopSystem'e "Ben seçildim!" diye haber verir.
         ShopSystem.Instance.OnSlotSelected(this);
     }
 

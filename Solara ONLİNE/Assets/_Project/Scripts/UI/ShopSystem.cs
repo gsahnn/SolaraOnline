@@ -1,56 +1,44 @@
 using UnityEngine;
 using System.Collections.Generic;
 using TMPro;
-using UnityEngine.UI; // Button'larý kodda kullanmak için bu satýr gerekli!
+using UnityEngine.UI;
 
 public class ShopSystem : MonoBehaviour
 {
     public static ShopSystem Instance { get; private set; }
 
-    [Header("Ana Paneller ve Konteynerlar")]
+    [Header("Ana Panel ve Konteynerlar")]
     [SerializeField] private GameObject shopPanel;
     [SerializeField] private Transform vendorItemContainer;
     [SerializeField] private Transform playerInventoryContainer;
 
     [Header("Prefab")]
-    [SerializeField] private GameObject shopSlotPrefab;
+    [SerializeField] private GameObject shopSlotPrefab; // Sadece TEK BÝR prefab referansý
 
     [Header("Butonlar ve Detaylar")]
-    [SerializeField] private Button buyButton; // "Satýn Al" butonu
-    [SerializeField] private Button sellButton; // "Sat" butonu
-    [SerializeField] private Button closeButton; // "Kapat" butonu
+    [SerializeField] private Button buyButton;
+    [SerializeField] private Button sellButton;
+    [SerializeField] private Button closeButton;
     [SerializeField] private TextMeshProUGUI playerGoldText;
 
     private PlayerInventory playerInventory;
     private CharacterStats playerStats;
     private ShopSlotController selectedSlot;
 
-    private List<GameObject> spawnedShopSlots = new List<GameObject>();
-    private List<GameObject> spawnedPlayerSlots = new List<GameObject>();
+    private List<GameObject> spawnedSlots = new List<GameObject>(); // Artýk tek bir liste yeterli
 
     private void Awake()
     {
         if (Instance != null) { Destroy(gameObject); }
         else { Instance = this; }
-
         shopPanel.SetActive(false);
     }
 
     private void Start()
     {
-        // --- BUTON ONCLICK ATAMALARI BURADA YAPILIYOR ---
-        // Bu, Inspector'dan atamayý unutsak bile, kodun butonlara ne yapacaðýný
-        // söylemesini garanti altýna alýr.
-
-        if (buyButton != null)
-            buyButton.onClick.AddListener(ConfirmPurchase);
-
-        if (sellButton != null)
-            sellButton.onClick.AddListener(ConfirmSale);
-
-        if (closeButton != null)
-            closeButton.onClick.AddListener(CloseShop);
-        // ----------------------------------------------------
+        buyButton.onClick.AddListener(ConfirmPurchase);
+        sellButton.onClick.AddListener(ConfirmSale);
+        closeButton.onClick.AddListener(CloseShop);
     }
 
     public void OpenShop(ShopData shopData, PlayerInventory inv)
@@ -63,7 +51,7 @@ public class ShopSystem : MonoBehaviour
 
         RefreshVendorUI(shopData);
         RefreshPlayerInventoryUI();
-        DeselectCurrent(); // Dükkan açýldýðýnda hiçbir þeyin seçili olmadýðýndan emin ol.
+        DeselectCurrent();
     }
 
     public void CloseShop()
@@ -75,25 +63,25 @@ public class ShopSystem : MonoBehaviour
 
     private void RefreshVendorUI(ShopData shopData)
     {
-        foreach (var slot in spawnedShopSlots) Destroy(slot);
-        spawnedShopSlots.Clear();
+        // Önce eski slotlarý temizle
+        foreach (Transform child in vendorItemContainer) Destroy(child.gameObject);
 
         foreach (var shopItem in shopData.itemsForSale)
         {
-            var slotGO = Instantiate(shopSlotPrefab, vendorItemContainer);
+            GameObject slotGO = Instantiate(shopSlotPrefab, vendorItemContainer);
             slotGO.GetComponent<ShopSlotController>().SetupVendorSlot(shopItem);
         }
     }
 
     private void RefreshPlayerInventoryUI()
     {
-        foreach (var slot in spawnedPlayerSlots) Destroy(slot);
-        spawnedPlayerSlots.Clear();
+        // Önce eski slotlarý temizle
+        foreach (Transform child in playerInventoryContainer) Destroy(child.gameObject);
 
         if (playerInventory == null) return;
         foreach (var invSlot in playerInventory.inventory.InventorySlots)
         {
-            var slotGO = Instantiate(shopSlotPrefab, playerInventoryContainer);
+            GameObject slotGO = Instantiate(shopSlotPrefab, playerInventoryContainer);
             slotGO.GetComponent<ShopSlotController>().SetupPlayerSlot(invSlot);
         }
         UpdatePlayerGoldUI();
@@ -112,7 +100,10 @@ public class ShopSystem : MonoBehaviour
 
     private void DeselectCurrent()
     {
-        if (selectedSlot != null) selectedSlot.Deselect();
+        // Deselect iþlemi için tüm slotlarý gezmemiz gerekiyor.
+        foreach (Transform child in vendorItemContainer) child.GetComponent<ShopSlotController>()?.Deselect();
+        foreach (Transform child in playerInventoryContainer) child.GetComponent<ShopSlotController>()?.Deselect();
+
         selectedSlot = null;
         buyButton.interactable = false;
         sellButton.interactable = false;
@@ -121,9 +112,7 @@ public class ShopSystem : MonoBehaviour
     private void ConfirmPurchase()
     {
         if (selectedSlot == null || !(selectedSlot.GetHeldItem() is ShopItem)) return;
-
         ShopItem itemToBuy = (ShopItem)selectedSlot.GetHeldItem();
-
         if (playerStats.gold >= itemToBuy.price)
         {
             if (playerInventory.inventory.AddToInventory(itemToBuy.item, 1))
@@ -136,9 +125,7 @@ public class ShopSystem : MonoBehaviour
     private void ConfirmSale()
     {
         if (selectedSlot == null || !(selectedSlot.GetHeldItem() is InventorySlot)) return;
-
         InventorySlot itemToSell = (InventorySlot)selectedSlot.GetHeldItem();
-
         if (itemToSell.itemData != null)
         {
             playerStats.gold += itemToSell.itemData.sellPrice;
