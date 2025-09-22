@@ -16,7 +16,7 @@ public class WorldUI_Controller : MonoBehaviour
 
     private void Start()
     {
-        if (regionNameText != null) regionNameText.gameObject.SetActive(false);
+      //  if (regionNameText != null) regionNameText.gameObject.SetActive(false);
         Debug.Log("<color=cyan>WORLD UI:</color>+ newRegion.regionName) ");
     }
     

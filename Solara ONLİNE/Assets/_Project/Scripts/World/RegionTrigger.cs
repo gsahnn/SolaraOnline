@@ -1,4 +1,6 @@
+using UnityEditor;
 using UnityEngine;
+using static UnityEditor.Experimental.GraphView.GraphView;
 
 [RequireComponent(typeof(Collider))]
 public class RegionTrigger : MonoBehaviour
@@ -10,12 +12,26 @@ public class RegionTrigger : MonoBehaviour
         GetComponent<Collider>().isTrigger = true;
     }
 
-    private void OnTriggerEnter(Collider other)
+    // Bu fonksiyon, bir obje trigger'ýn içinde durduðu SÜRECE HER FRAME ÇAÐRILIR.
+    private void OnTriggerStay(Collider other)
     {
+        // Bu mesajý konsolda görmemiz ÞART!
+        Debug.Log("<size=20><color=orange>OnTriggerStay ÇALIÞIYOR! Giren obje: " + other.name + ", Tag: " + other.tag + "</color></size>");
+
         if (other.CompareTag("Player"))
-            Debug.Log("Bir obje trigger'a girdi. Adý: " + other.gameObject.name + ", Tag'i: " + other.gameObject.tag);
         {
-            WorldUI_Controller.Instance?.ShowRegionName(regionData);
+            // Bu mesajý görüyorsak, tag de doðru demektir.
+            Debug.Log("<size=20><color=green>OYUNCU ALGILANDI!</color></size>");
+
+            // WorldUI_Controller'ýn null olup olmadýðýný kontrol edelim.
+            if (WorldUI_Controller.Instance != null)
+            {
+                WorldUI_Controller.Instance.ShowRegionName(regionData);
+            }
+            else
+            {
+                Debug.LogError("WorldUI_Controller.Instance BULUNAMADI!");
+            }
         }
     }
-}
+} 
