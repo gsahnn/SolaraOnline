@@ -719,6 +719,10 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 3
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: ab95d2f958f123f4a85e7c201b2ef28e, type: 3}
+      propertyPath: m_TagString
+      value: Player
+      objectReference: {fileID: 0}
     - target: {fileID: 1043287986099006303, guid: ab95d2f958f123f4a85e7c201b2ef28e, type: 3}
       propertyPath: m_Layer
       value: 3
@@ -1488,6 +1492,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   moveSpeed: 5
+  attackableLayers:
+    serializedVersion: 2
+    m_Bits: 128
 --- !u!114 &3147732011362943933
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1500,6 +1507,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2777fefcfc3a16340bc3c24601d4aab4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CharacterStats
+  gold: 1000
   level: 1
   currentExp: 0
   expToNextLevel: 50
@@ -1515,6 +1523,7 @@ MonoBehaviour:
   minDamage: 13
   maxDamage: 25
   defense: 15
+  experienceGranted: 50
 --- !u!114 &3310600923399589342
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1541,6 +1550,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d45d9fbd03f7c0040b5cc261a9999915, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SkillHolder
+  skills: []
 --- !u!114 &1467584199261498064
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1557,7 +1567,6 @@ MonoBehaviour:
   interactableLayer:
     serializedVersion: 2
     m_Bits: 64
-  interactionRayOrigin: {fileID: 9113584115657829641}
 --- !u!114 &5023142203854205979
 MonoBehaviour:
   m_ObjectHideFlags: 0
