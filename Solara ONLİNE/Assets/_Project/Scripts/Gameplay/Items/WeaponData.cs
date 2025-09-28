@@ -1,11 +1,10 @@
-// WeaponData.cs
 using UnityEngine;
 
-// Artýk özel bir "Silah" oluþturabiliriz.
 [CreateAssetMenu(fileName = "New Weapon", menuName = "Solara/Data/Items/Weapon")]
 public class WeaponData : EquipmentData
 {
-    [Header("Silah Statlarý")]
+    [Header("Silah Ayarlarý")]
+    public WeaponType weaponType;
     public int minDamage;
     public int maxDamage;
 }
