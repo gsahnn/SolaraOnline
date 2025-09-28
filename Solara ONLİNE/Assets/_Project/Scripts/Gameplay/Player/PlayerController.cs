@@ -25,7 +25,6 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        // Eðer bir UI paneli açýksa, karakter kontrolünü tamamen durdur.
         if (IsAnyUIPanelOpen())
         {
             animator.SetFloat("Speed", 0f);
@@ -35,27 +34,19 @@ public class PlayerController : MonoBehaviour
         // Saldýrý durumunu Animator'den öðren.
         bool isAttacking = animator.GetBool("IsAttacking");
 
-        // Saldýrý sýrasýnda hareketi engelle.
         if (!isAttacking)
         {
             HandleMovement();
         }
 
-        // Oyuncunun girdilerini dinle.
         HandleInput();
     }
 
-    // Karakterin fiziksel hareketini ve yürüme/durma animasyonunu yönetir.
     private void HandleMovement()
     {
         float horizontal = Input.GetAxis("Horizontal");
         float vertical = Input.GetAxis("Vertical");
-        Vector3 moveDirection = new Vector3(horizontal, 0, vertical);
-
-        if (moveDirection.magnitude > 1f)
-        {
-            moveDirection.Normalize();
-        }
+        Vector3 moveDirection = new Vector3(horizontal, 0, vertical).normalized;
 
         controller.Move(moveDirection * moveSpeed * Time.deltaTime);
 
@@ -67,19 +58,15 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    // Oyuncunun klavye ve fare girdilerini dinler.
     private void HandleInput()
     {
         playerTargeting.HandleTargetingInput();
 
-        // Boþluk tuþuna BASILDIÐI AN, saldýrý durumunu baþlat.
         if (Input.GetKeyDown(KeyCode.Space))
         {
             playerCombat.SetAttackingState(true);
-
         }
 
-        // Boþluk tuþu BIRAKILDIÐI AN, saldýrý durumunu bitir.
         if (Input.GetKeyUp(KeyCode.Space))
         {
             playerCombat.SetAttackingState(false);

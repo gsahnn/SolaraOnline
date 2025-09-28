@@ -14,12 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ComboData
   attacks:
   - triggerName: Attack1
-    comboTimingWindow: 0
+    damageMultiplier: 1
   - triggerName: Attack2
-    comboTimingWindow: 0
+    damageMultiplier: 1
   - triggerName: Attack3
-    comboTimingWindow: 0
+    damageMultiplier: 1
   - triggerName: Attack4
-    comboTimingWindow: 0
-  - triggerName: Attack5
-    comboTimingWindow: 0
+    damageMultiplier: 1
