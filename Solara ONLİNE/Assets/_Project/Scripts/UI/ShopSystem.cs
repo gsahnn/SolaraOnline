@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine.UI;
+using System;
 
 public class ShopSystem : MonoBehaviour
 {
@@ -140,5 +141,10 @@ public class ShopSystem : MonoBehaviour
         {
             playerGoldText.text = playerStats.gold.ToString();
         }
+    }
+
+    internal bool IsOpen()
+    {
+        throw new NotImplementedException();
     }
 }

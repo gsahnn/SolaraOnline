@@ -4935,6 +4935,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: -159.3966
       objectReference: {fileID: 0}
+    - target: {fileID: 9018417223763717730, guid: 7e97a9cad78b8d5479c388190705b38b, type: 3}
+      propertyPath: targetableLayers.m_Bits
+      value: 4294967295
+      objectReference: {fileID: 0}
     - target: {fileID: 9095843391414336933, guid: 7e97a9cad78b8d5479c388190705b38b, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
       value: 9.755849
@@ -4947,13 +4951,17 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 54.414394
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 118359329553910156, guid: 7e97a9cad78b8d5479c388190705b38b, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 4670791123194395045, guid: 7e97a9cad78b8d5479c388190705b38b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1320103017}
+    - targetCorrespondingSourceObject: {fileID: 4670791123194395045, guid: 7e97a9cad78b8d5479c388190705b38b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1320103033}
   m_SourcePrefab: {fileID: 100100000, guid: 7e97a9cad78b8d5479c388190705b38b, type: 3}
 --- !u!1 &1122618283
 GameObject:
@@ -6111,6 +6119,19 @@ MonoBehaviour:
   targetableLayers:
     serializedVersion: 2
     m_Bits: 128
+--- !u!114 &1320103033
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1320103003}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 958b312797164984287a9604a56c593d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerController
+  moveSpeed: 5
 --- !u!1 &1347839449
 GameObject:
   m_ObjectHideFlags: 0

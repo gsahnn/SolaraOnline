@@ -4,7 +4,6 @@ using UnityEngine;
 [RequireComponent(typeof(Animator))]
 [RequireComponent(typeof(PlayerTargeting))]
 [RequireComponent(typeof(PlayerCombatController))]
-// Diðer gerekli bileþenler...
 public class PlayerController : MonoBehaviour
 {
     [Header("Hareket Ayarlarý")]
@@ -26,27 +25,27 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        // UI paneli açýk mý kontrolü
+        // Eðer bir UI paneli açýksa, karakter kontrolünü tamamen durdur.
         if (IsAnyUIPanelOpen())
         {
-            animator.SetFloat("Speed", 0f); // Hareket animasyonunu durdur
+            animator.SetFloat("Speed", 0f);
             return;
         }
 
-        // Karakterin saldýrýp saldýrmadýðýný kontrol et
-        bool isAttacking = animator.GetCurrentAnimatorStateInfo(0).IsTag("Attack");
+        // Saldýrý durumunu Animator'den öðren.
+        bool isAttacking = animator.GetBool("IsAttacking");
 
-        // Saldýrý sýrasýnda hareketi engelle
+        // Saldýrý sýrasýnda hareketi engelle.
         if (!isAttacking)
         {
             HandleMovement();
         }
 
-        // Girdileri dinle
+        // Oyuncunun girdilerini dinle.
         HandleInput();
     }
 
-    // Karakterin fiziksel hareketini ve yürüme/durma animasyonunu yönetir
+    // Karakterin fiziksel hareketini ve yürüme/durma animasyonunu yönetir.
     private void HandleMovement()
     {
         float horizontal = Input.GetAxis("Horizontal");
@@ -60,12 +59,7 @@ public class PlayerController : MonoBehaviour
 
         controller.Move(moveDirection * moveSpeed * Time.deltaTime);
 
-        // --- BLEND TREE OLMADAN HIZ KONTROLÜ ---
-        // Animator'deki 'Speed' parametresine, karakterin hareket edip etmediðine göre
-        // 0'dan büyük bir deðer veya 0 yazýyoruz. Animator, bu deðere göre
-        // Wait -> Run veya Run -> Wait geçiþini kendisi yapacak.
         animator.SetFloat("Speed", moveDirection.magnitude);
-        // ------------------------------------------
 
         if (moveDirection != Vector3.zero)
         {
@@ -73,18 +67,22 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    // Oyuncunun klavye ve fare girdilerini dinler
+    // Oyuncunun klavye ve fare girdilerini dinler.
     private void HandleInput()
     {
         playerTargeting.HandleTargetingInput();
 
-        bool isAttacking = animator.GetCurrentAnimatorStateInfo(0).IsTag("Attack");
-        if (!isAttacking)
+        // Boþluk tuþuna BASILDIÐI AN, saldýrý durumunu baþlat.
+        if (Input.GetKeyDown(KeyCode.Space))
         {
-            if (Input.GetKeyDown(KeyCode.Space))
-            {
-                playerCombat.HandleAttackInput();
-            }
+            playerCombat.SetAttackingState(true);
+
+        }
+
+        // Boþluk tuþu BIRAKILDIÐI AN, saldýrý durumunu bitir.
+        if (Input.GetKeyUp(KeyCode.Space))
+        {
+            playerCombat.SetAttackingState(false);
         }
 
         if (Input.GetKeyDown(KeyCode.C))
@@ -93,7 +91,6 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    // Hangi UI panelinin açýk olduðunu kontrol eden yardýmcý fonksiyon
     private bool IsAnyUIPanelOpen()
     {
         return CharacterStatsUI_Controller.Instance != null && CharacterStatsUI_Controller.Instance.IsOpen();
