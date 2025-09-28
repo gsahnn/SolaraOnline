@@ -6,7 +6,7 @@ using System.Collections;
 [RequireComponent(typeof(CharacterStats))]
 [RequireComponent(typeof(SkillHolder))]
 [RequireComponent(typeof(QuestLog))]
-[RequireComponent(typeof(PlayerTargeting))] // Bu script'in varlýðýný zorunlu kýl
+[RequireComponent(typeof(PlayerTargeting))]
 public class PlayerController : MonoBehaviour
 {
     [Header("Hareket Ayarlarý")]
@@ -22,7 +22,7 @@ public class PlayerController : MonoBehaviour
     private Camera mainCamera;
     private CharacterStats myStats;
     private SkillHolder skillHolder;
-    private PlayerTargeting playerTargeting; // <-- EKSÝK DEÐÝÞKEN TANIMI BURADAYDI
+    private PlayerTargeting playerTargeting;
     private MonsterController currentTarget;
 
     // Kombo Sistemi Deðiþkenleri
@@ -35,7 +35,7 @@ public class PlayerController : MonoBehaviour
         animator = GetComponent<Animator>();
         myStats = GetComponent<CharacterStats>();
         skillHolder = GetComponent<SkillHolder>();
-        playerTargeting = GetComponent<PlayerTargeting>(); // <-- EKSÝK ATAMA BURADAYDI
+        playerTargeting = GetComponent<PlayerTargeting>();
     }
 
     private void Start()
@@ -47,26 +47,34 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        // Kombo zaman aþýmýný kontrol et
         if (Time.time - lastAttackInputTime > comboResetTime)
         {
             ResetCombo();
         }
 
         bool isUIOpen = CharacterStatsUI_Controller.Instance != null && CharacterStatsUI_Controller.Instance.IsOpen();
+        // Animator'deki durumun etiketini kontrol et. Bu en güvenilir yöntemdir.
         bool isAttacking = animator.GetCurrentAnimatorStateInfo(0).IsTag("Attack");
 
+        // Eðer bir UI paneli açýksa, hiçbir þey yapma.
         if (isUIOpen) return;
 
+        // Saldýrý sýrasýnda hareketi engelle
         if (!isAttacking)
         {
             HandleMovement();
         }
 
+        // Girdi kontrolünü her zaman yap, içindeki fonksiyonlar kendi kontrollerini yapacak.
         HandleInput();
     }
 
     private void HandleInput()
     {
+        // Eðer zaten saldýrýyorsak, yeni bir saldýrý veya yetenek komutu alma.
+        if (animator.GetCurrentAnimatorStateInfo(0).IsTag("Attack")) return;
+
         if (Input.GetKeyDown(KeyCode.Alpha1)) { AttemptToUseSkill(0); return; }
         if (Input.GetKeyDown(KeyCode.Space)) { AttemptToAttack(); }
         if (Input.GetKeyDown(KeyCode.C)) { CharacterStatsUI_Controller.Instance?.TogglePanel(); }
@@ -77,6 +85,10 @@ public class PlayerController : MonoBehaviour
         if (playerTargeting.currentTarget != null && playerTargeting.currentTarget.TryGetComponent(out MonsterController monster))
         {
             StartAttack(monster);
+        }
+        else
+        {
+            // Ýleride buraya en yakýn düþmaný bulma mantýðý eklenebilir.
         }
     }
 
@@ -98,6 +110,7 @@ public class PlayerController : MonoBehaviour
 
     private void ResetCombo()
     {
+        if (comboCounter == 0) return; // Zaten sýfýrsa tekrar iþlem yapma.
         comboCounter = 0;
         animator.SetInteger("AttackCombo", 0);
     }
@@ -107,7 +120,7 @@ public class PlayerController : MonoBehaviour
         if (currentTarget != null && currentTarget.TryGetComponent(out CharacterStats targetStats))
         {
             int damage = Random.Range(myStats.minDamage, myStats.maxDamage + 1);
-            if (comboCounter == 3)
+            if (comboCounter == 3) // Son vuruþ bonusu
             {
                 damage = Mathf.RoundToInt(damage * 1.5f);
                 Debug.Log("KOMBO FÝNAL VURUÞU: " + damage + " hasar!");
@@ -121,23 +134,26 @@ public class PlayerController : MonoBehaviour
         ResetCombo();
     }
 
+    private void HandleMovement()
+    {
+        float horizontal = Input.GetAxis("Horizontal");
+        float vertical = Input.GetAxis("Vertical");
+        Vector3 moveDirection = new Vector3(horizontal, 0, vertical).normalized;
+        controller.Move(moveDirection * moveSpeed * Time.deltaTime);
+        animator.SetBool("Speed", moveDirection.magnitude > 0.1f);
+        if (moveDirection != Vector3.zero) { transform.rotation = Quaternion.LookRotation(moveDirection); }
+    }
+
     private void AttemptToUseSkill(int skillIndex)
     {
-        // Hatalý `monster` kullanýmý düzeltildi.
-        if (playerTargeting.currentTarget != null && playerTargeting.currentTarget.TryGetComponent(out MonsterController targetMonster))
+        if (playerTargeting.currentTarget != null && playerTargeting.currentTarget.TryGetComponent(out MonsterController monster))
         {
             ResetCombo();
-            transform.LookAt(targetMonster.transform); // Yönelme eklendi
-            skillHolder.UseSkill(skillIndex, targetMonster);
+            transform.LookAt(monster.transform);
+            skillHolder.UseSkill(skillIndex, monster);
         }
     }
 
-    // --- Diðer Fonksiyonlar (Deðiþiklik Yok) ---
-    #region Unchanged Helper Functions
-    private void AddTestContent()
-    {
-        skillHolder.LearnSkill(Resources.Load<SkillData>("Data/Skills/Güçlü Vuruþ"));
-    }
     private void InitializeUserInterfaces()
     {
         PlayerHUD_Controller.Instance?.InitializeHUD(myStats);
@@ -145,31 +161,11 @@ public class PlayerController : MonoBehaviour
         SkillBar_Controller.Instance?.Initialize(skillHolder);
         QuestTracker_Controller.Instance?.Initialize(GetComponent<QuestLog>());
     }
-    private void HandleMovement()
+
+    private void AddTestContent()
     {
-        float horizontal = Input.GetAxis("Horizontal");
-        float vertical = Input.GetAxis("Vertical");
-        Vector3 moveDirection = new Vector3(horizontal, 0, vertical);
-
-        // Hýzý normalize et ki çapraz giderken hýzlanmasýn.
-        if (moveDirection.magnitude > 1f)
-        {
-            moveDirection.Normalize();
-        }
-
-        controller.Move(moveDirection * moveSpeed * Time.deltaTime);
-
-        // --- EN ÖNEMLÝ SATIR BURASI ---
-        // Karakterin mevcut hýzýný hesapla ve bunu Animator'deki 'Speed' parametresine yaz.
-        // 0.1f'lik 'damp time' geçiþi yumuþatýr.
-        float currentSpeed = moveDirection.magnitude;
-        animator.SetFloat("Speed", currentSpeed, 0.1f, Time.deltaTime);
-        // --------------------------------
-
-        if (moveDirection != Vector3.zero)
-        {
-            transform.rotation = Quaternion.LookRotation(moveDirection);
-        }
-    #endregion
-}
+        skillHolder.LearnSkill(Resources.Load<SkillData>("Data/Skills/Güçlü Vuruþ"));
+        // Görevler artýk NPC'den alýndýðý için bu satýr kapalý kalmalý.
+        // GetComponent<QuestLog>().AddQuest(Resources.Load<QuestData>("Data/Quests/Kurt Avý"));
+    }
 }
