@@ -4267,6 +4267,22 @@ PrefabInstance:
       propertyPath: specialCombo_7
       value: 
       objectReference: {fileID: 11400000, guid: 4be25dfccf6de024e845756b66f89a65, type: 2}
+    - target: {fileID: 2564130466392214756, guid: 7e97a9cad78b8d5479c388190705b38b, type: 3}
+      propertyPath: availableCombos.Array.size
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 2564130466392214756, guid: 7e97a9cad78b8d5479c388190705b38b, type: 3}
+      propertyPath: 'availableCombos.Array.data[0]'
+      value: 
+      objectReference: {fileID: 11400000, guid: f73d3942fa260424e80c0f403c3d7b2d, type: 2}
+    - target: {fileID: 2564130466392214756, guid: 7e97a9cad78b8d5479c388190705b38b, type: 3}
+      propertyPath: 'availableCombos.Array.data[1]'
+      value: 
+      objectReference: {fileID: 11400000, guid: 8319f8d7f54dc2d48a21ab5f50557690, type: 2}
+    - target: {fileID: 2564130466392214756, guid: 7e97a9cad78b8d5479c388190705b38b, type: 3}
+      propertyPath: 'availableCombos.Array.data[2]'
+      value: 
+      objectReference: {fileID: 11400000, guid: 4be25dfccf6de024e845756b66f89a65, type: 2}
     - target: {fileID: 2788913605432778729, guid: 7e97a9cad78b8d5479c388190705b38b, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
       value: 34.16615

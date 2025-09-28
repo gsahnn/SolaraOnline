@@ -1,21 +1,20 @@
-using System.Linq;
 using UnityEngine;
-using UnityEngine.UIElements;
+using System.Collections.Generic;
 
 public class PlayerCombatController : MonoBehaviour
 {
-    [Header("Kombo Verileri")]
-    [SerializeField] private ComboData normalCombo;
-    [SerializeField] private ComboData specialCombo;
-    [SerializeField] private float comboResetTime = 1.2f; // Týklamalar arasý maksimum bekleme süresi
+    [Header("Kombo Veri Dosyalarý")]
+    [Tooltip("Karakterin kullanabileceði tüm kombo setleri.")]
+    [SerializeField] private List<ComboData> availableCombos;
 
-    public bool isSpecialComboActive = false;
-
+    // Diðer script'ler
     private Animator animator;
     private PlayerTargeting playerTargeting;
     private CharacterStats myStats;
 
+    // Ýç sistem deðiþkenleri
     private ComboData currentCombo;
+    private int currentComboTypeIndex = 0;
     private int comboCounter = 0;
     private float lastAttackTime = 0f;
 
@@ -24,81 +23,89 @@ public class PlayerCombatController : MonoBehaviour
         animator = GetComponent<Animator>();
         playerTargeting = GetComponent<PlayerTargeting>();
         myStats = GetComponent<CharacterStats>();
-        UpdateCurrentCombo();
+    }
+
+    private void Start()
+    {
+        // Baþlangýçta ilk komboyu ata
+        if (availableCombos != null && availableCombos.Count > 0)
+        {
+            currentCombo = availableCombos[0];
+        }
     }
 
     private void Update()
     {
-        // Eðer son saldýrýdan bu yana çok zaman geçtiyse, komboyu sýfýrla.
-        if (Time.time - lastAttackTime > comboResetTime)
+        // Eðer son vuruþtan bu yana çok zaman geçtiyse, komboyu sýfýrla.
+        // Bu, Attack->Movement geçiþindeki Exit Time'a ek bir güvenlik katmanýdýr.
+        if (comboCounter > 0 && Time.time - lastAttackTime > 1.5f) // 1.5 saniye bekleme süresi
         {
-            if (comboCounter > 0)
-            {
-                ResetCombo();
-            }
+            ResetCombo();
         }
     }
 
+    // Bu fonksiyon PlayerController tarafýndan çaðrýlýr.
     public void HandleAttackInput()
     {
-        // Eðer karakter zaten bir saldýrý animasyonu oynuyorsa, yeni saldýrý komutu alma.
-        // Bu, kombonun ortasýnda spam'lemeyi engeller, zamanlama gerektirir.
+        // Eðer karakter zaten bir saldýrý animasyonu oynuyorsa, yeni bir saldýrý komutu alma.
         if (animator.GetCurrentAnimatorStateInfo(0).IsTag("Attack"))
         {
             return;
         }
 
-        StartAttack();
+        // Bir önceki saldýrýnýn bitimine yakýn mý týklandý?
+        // Bu zamanlama, kombonun akýcý hissettirmesi için ayarlanabilir.
+        if (comboCounter > 0 && Time.time - lastAttackTime > currentCombo.attacks[comboCounter - 1].comboTimingWindow)
+        {
+            // Çok geç týklandý, komboyu sýfýrdan baþlat.
+            ResetCombo();
+        }
+
+        StartOrContinueCombo();
     }
 
-    private void StartAttack()
+    private void StartOrContinueCombo()
     {
-        // Bir önceki saldýrýnýn zaman penceresi içindeysek, komboya devam et.
-        if (Time.time - lastAttackTime <= currentCombo.attacks[comboCounter].comboTimingWindow)
-        {
-            comboCounter++;
-        }
-        else // Deðilse, komboyu sýfýrdan baþlat.
-        {
-            comboCounter = 1;
-        }
-
-        // Kombo zincirinin sonuna geldiysek, baþa dön.
-        if (comboCounter > currentCombo.attacks.Count)
-        {
-            comboCounter = 1;
-        }
-
         if (playerTargeting.currentTarget != null)
             transform.LookAt(playerTargeting.currentTarget.position);
 
         lastAttackTime = Time.time;
 
+        // Bir sonraki kombo adýmýna geç
+        comboCounter++;
+
+        // Eðer mevcut kombonun sonuna geldiysek, sýfýrla ve ilk adýma dön.
+        if (comboCounter > currentCombo.attacks.Count)
+        {
+            comboCounter = 1;
+        }
+
+        // ComboData'dan doðru trigger'ý al ve ateþle
         string triggerToFire = currentCombo.attacks[comboCounter - 1].triggerName;
         animator.SetTrigger(triggerToFire);
     }
 
     private void ResetCombo()
     {
+        if (comboCounter == 0) return;
         comboCounter = 0;
-        // Animator'deki trigger'larý temizlemeye gerek yok, çünkü artýk her saldýrý
-        // state'inden Wait'e otomatik bir çýkýþ var.
     }
 
     public void AnimationEvent_DealDamage()
     {
-        // ... (Hasar verme kodu ayný) ...
+        // ... (Hasar verme kodu ayný, çarpan olmadýðý için basit) ...
     }
 
-    public void SetSpecialComboActive(bool isActive)
+    // Bu fonksiyon, UI'dan veya bir yetenekle çaðrýlabilir.
+    public void ChangeComboType()
     {
-        isSpecialComboActive = isActive;
-        UpdateCurrentCombo();
+        currentComboTypeIndex++;
+        if (currentComboTypeIndex >= availableCombos.Count)
+        {
+            currentComboTypeIndex = 0;
+        }
+        currentCombo = availableCombos[currentComboTypeIndex];
         ResetCombo();
-    }
-
-    private void UpdateCurrentCombo()
-    {
-        currentCombo = isSpecialComboActive ? specialCombo : normalCombo;
+        Debug.Log("Kombo Türü Deðiþtirildi: " + currentCombo.name);
     }
 }
