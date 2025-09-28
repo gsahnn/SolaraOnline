@@ -64,7 +64,7 @@ public class PlayerController : MonoBehaviour
         controller.Move(moveDirection * moveSpeed * Time.deltaTime);
 
         float currentSpeed = moveDirection.magnitude;
-        animator.SetFloat("Speed", currentSpeed, 0.1f, Time.deltaTime);
+        animator.SetFloat("Speed", currentSpeed);
 
         if (moveDirection != Vector3.zero)
         {
