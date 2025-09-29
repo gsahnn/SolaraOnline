@@ -1337,12 +1337,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ShopSystem
   shopPanel: {fileID: 395608843}
   vendorItemContainer: {fileID: 1573924319}
+  vendorSlotPrefab: {fileID: 0}
   playerInventoryContainer: {fileID: 176811091}
-  shopSlotPrefab: {fileID: 6802028528627819419, guid: 6e1b6434083dbb549934f508098c90c6, type: 3}
+  playerSlotPrefab: {fileID: 0}
+  playerGoldText: {fileID: 236644341}
   buyButton: {fileID: 1053552501}
   sellButton: {fileID: 1408613538}
   closeButton: {fileID: 820330907}
-  playerGoldText: {fileID: 236644341}
 --- !u!114 &395608848
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4247,6 +4248,14 @@ PrefabInstance:
       propertyPath: m_Controller
       value: 
       objectReference: {fileID: 9100000, guid: b3118df3fb0121d44afe695add7c3cf1, type: 2}
+    - target: {fileID: 2124018693489899877, guid: 7e97a9cad78b8d5479c388190705b38b, type: 3}
+      propertyPath: m_CullingMode
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 2124018693489899877, guid: 7e97a9cad78b8d5479c388190705b38b, type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2564130466392214756, guid: 7e97a9cad78b8d5479c388190705b38b, type: 3}
       propertyPath: normalCombo
       value: 
@@ -4654,6 +4663,10 @@ PrefabInstance:
     - target: {fileID: 6601749170515757264, guid: 7e97a9cad78b8d5479c388190705b38b, type: 3}
       propertyPath: m_UseGravity
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6601749170515757264, guid: 7e97a9cad78b8d5479c388190705b38b, type: 3}
+      propertyPath: m_Constraints
+      value: 84
       objectReference: {fileID: 0}
     - target: {fileID: 6601749170515757264, guid: 7e97a9cad78b8d5479c388190705b38b, type: 3}
       propertyPath: m_IsKinematic
@@ -6139,6 +6152,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   moveSpeed: 5
+  turnSmoothTime: 0.1
 --- !u!1 &1347839449
 GameObject:
   m_ObjectHideFlags: 0
