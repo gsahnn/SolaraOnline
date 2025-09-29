@@ -13,15 +13,21 @@ MonoBehaviour:
   m_Name: Ozel_7_Vurus_Kombo
   m_EditorClassIdentifier: Assembly-CSharp::ComboData
   attacks:
-  - triggerName: Attack1
+  - triggerName: actionID 1
+    actionID: 0
     damageMultiplier: 1
-  - triggerName: Attack2
+  - triggerName: actionID 2
+    actionID: 0
     damageMultiplier: 1
-  - triggerName: Attack3
+  - triggerName: actionID 3
+    actionID: 0
     damageMultiplier: 1
-  - triggerName: Attack5
+  - triggerName: actionID 5
+    actionID: 0
     damageMultiplier: 1
-  - triggerName: Attack6
+  - triggerName: actionID 6
+    actionID: 0
     damageMultiplier: 1
-  - triggerName: Attack4
+  - triggerName: actionID 4
+    actionID: 0
     damageMultiplier: 1

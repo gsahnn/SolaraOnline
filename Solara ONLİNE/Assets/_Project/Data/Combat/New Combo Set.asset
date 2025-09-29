@@ -13,11 +13,15 @@ MonoBehaviour:
   m_Name: New Combo Set
   m_EditorClassIdentifier: Assembly-CSharp::ComboData
   attacks:
-  - triggerName: Attack1
-    damageMultiplier: 1
-  - triggerName: Attack2
-    damageMultiplier: 1
-  - triggerName: Attack3
-    damageMultiplier: 1
-  - triggerName: Attack4
-    damageMultiplier: 1
+  - triggerName: actionID 1
+    actionID: 0
+    damageMultiplier: 0
+  - triggerName: actionID 2
+    actionID: 0
+    damageMultiplier: 0
+  - triggerName: actionID 3
+    actionID: 0
+    damageMultiplier: 0
+  - triggerName: actionID 4
+    actionID: 0
+    damageMultiplier: 0

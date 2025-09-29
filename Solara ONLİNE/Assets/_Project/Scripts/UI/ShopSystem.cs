@@ -143,8 +143,9 @@ public class ShopSystem : MonoBehaviour
         }
     }
 
-    internal bool IsOpen()
+    public bool IsOpen()
     {
-        throw new NotImplementedException();
+        
+        return shopPanel != null && shopPanel.activeSelf;
     }
 }

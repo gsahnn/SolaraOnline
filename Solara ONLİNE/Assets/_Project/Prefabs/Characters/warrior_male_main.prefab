@@ -83,9 +83,6 @@ PrefabInstance:
       addedObject: {fileID: 815287156834272996}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e788adbb781a64d4dbf529ea23adff2e, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 118359329553910156}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e788adbb781a64d4dbf529ea23adff2e, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 7631398339157015332}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e788adbb781a64d4dbf529ea23adff2e, type: 3}
       insertIndex: -1
@@ -93,6 +90,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e788adbb781a64d4dbf529ea23adff2e, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8304434797526576811}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e788adbb781a64d4dbf529ea23adff2e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 9018417223763717730}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e788adbb781a64d4dbf529ea23adff2e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2564130466392214756}
   m_SourcePrefab: {fileID: 100100000, guid: e788adbb781a64d4dbf529ea23adff2e, type: 3}
 --- !u!1 &4670791123194395045 stripped
 GameObject:
@@ -243,22 +246,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SkillHolder
   skills: []
---- !u!114 &118359329553910156
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4670791123194395045}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 958b312797164984287a9604a56c593d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerController
-  moveSpeed: 5
-  attackableLayers:
-    serializedVersion: 2
-    m_Bits: 128
 --- !u!114 &7631398339157015332
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -302,3 +289,32 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InventorySlot_UI_Controller
   itemIcon: {fileID: 0}
   stackCountText: {fileID: 0}
+--- !u!114 &9018417223763717730
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4670791123194395045}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 43019610627e79447a9dc20c0e9fec84, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerTargeting
+  targetableLayers:
+    serializedVersion: 2
+    m_Bits: 0
+--- !u!114 &2564130466392214756
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4670791123194395045}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c5f65db803f96648b7a8ad513f7a25f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerCombatController
+  availableCombos: []
+  comboResetTime: 1.5
