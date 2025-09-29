@@ -2,31 +2,34 @@ using UnityEngine;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine.UI;
-using System;
 
 public class ShopSystem : MonoBehaviour
 {
     public static ShopSystem Instance { get; private set; }
 
-    [Header("Ana Panel ve Konteynerlar")]
+    [Header("Ana Panel")]
     [SerializeField] private GameObject shopPanel;
+
+    [Header("Satýcý Bölümü")]
     [SerializeField] private Transform vendorItemContainer;
+    [SerializeField] private GameObject vendorSlotPrefab;
+
+    [Header("Oyuncu Bölümü")]
     [SerializeField] private Transform playerInventoryContainer;
+    [SerializeField] private GameObject playerSlotPrefab;
+    [SerializeField] private TextMeshProUGUI playerGoldText;
 
-    [Header("Prefab")]
-    [SerializeField] private GameObject shopSlotPrefab; // Sadece TEK BÝR prefab referansý
-
-    [Header("Butonlar ve Detaylar")]
+    [Header("Butonlar")]
     [SerializeField] private Button buyButton;
     [SerializeField] private Button sellButton;
     [SerializeField] private Button closeButton;
-    [SerializeField] private TextMeshProUGUI playerGoldText;
 
     private PlayerInventory playerInventory;
     private CharacterStats playerStats;
     private ShopSlotController selectedSlot;
 
-    private List<GameObject> spawnedSlots = new List<GameObject>(); // Artýk tek bir liste yeterli
+    private List<GameObject> spawnedVendorSlots = new List<GameObject>();
+    private List<GameObject> spawnedPlayerSlots = new List<GameObject>();
 
     private void Awake()
     {
@@ -64,25 +67,25 @@ public class ShopSystem : MonoBehaviour
 
     private void RefreshVendorUI(ShopData shopData)
     {
-        // Önce eski slotlarý temizle
-        foreach (Transform child in vendorItemContainer) Destroy(child.gameObject);
+        foreach (var slot in spawnedVendorSlots) Destroy(slot);
+        spawnedVendorSlots.Clear();
 
         foreach (var shopItem in shopData.itemsForSale)
         {
-            GameObject slotGO = Instantiate(shopSlotPrefab, vendorItemContainer);
+            GameObject slotGO = Instantiate(vendorSlotPrefab, vendorItemContainer);
             slotGO.GetComponent<ShopSlotController>().SetupVendorSlot(shopItem);
         }
     }
 
     private void RefreshPlayerInventoryUI()
     {
-        // Önce eski slotlarý temizle
-        foreach (Transform child in playerInventoryContainer) Destroy(child.gameObject);
+        foreach (var slot in spawnedPlayerSlots) Destroy(slot);
+        spawnedPlayerSlots.Clear();
 
         if (playerInventory == null) return;
         foreach (var invSlot in playerInventory.inventory.InventorySlots)
         {
-            GameObject slotGO = Instantiate(shopSlotPrefab, playerInventoryContainer);
+            GameObject slotGO = Instantiate(playerSlotPrefab, playerInventoryContainer);
             slotGO.GetComponent<ShopSlotController>().SetupPlayerSlot(invSlot);
         }
         UpdatePlayerGoldUI();
@@ -101,7 +104,6 @@ public class ShopSystem : MonoBehaviour
 
     private void DeselectCurrent()
     {
-        // Deselect iþlemi için tüm slotlarý gezmemiz gerekiyor.
         foreach (Transform child in vendorItemContainer) child.GetComponent<ShopSlotController>()?.Deselect();
         foreach (Transform child in playerInventoryContainer) child.GetComponent<ShopSlotController>()?.Deselect();
 
@@ -143,9 +145,10 @@ public class ShopSystem : MonoBehaviour
         }
     }
 
+    // --- EKSÝK FONKSÝYON BURAYA EKLENDÝ ---
     public bool IsOpen()
     {
-        
+        // shopPanel referansý null deðilse VE panel sahnede aktifse, true döndür.
         return shopPanel != null && shopPanel.activeSelf;
     }
 }
