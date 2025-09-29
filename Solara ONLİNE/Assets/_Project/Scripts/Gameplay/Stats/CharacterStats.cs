@@ -7,6 +7,14 @@ public class CharacterStats : MonoBehaviour
     [Header("UI Referansý")]
     [SerializeField] private GameObject nameplatePrefab;
 
+    [Header("Kimlik Bilgileri")]
+    public string characterName; // GameObject.name yerine bunu kullanmak daha esnek.
+    public string guildName; // YENÝ: Lonca adý için alan.
+
+    [Header("Þöhret ve Derece")]
+    [Tooltip("Karakterin mevcut derece/þöhret puaný.")]
+    public int alignment = 0; // Pozitif: Kahraman, Negatif: Zalim
+
     [Header("Ekonomi")]
     public int gold = 1000;
 

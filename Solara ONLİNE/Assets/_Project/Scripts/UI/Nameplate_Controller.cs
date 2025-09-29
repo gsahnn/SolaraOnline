@@ -1,20 +1,14 @@
 using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
 
 public class Nameplate_Controller : MonoBehaviour
 {
-    [SerializeField] private TextMeshProUGUI nameText;
-    [SerializeField] private Slider healthSlider;
+    [SerializeField] private TextMeshProUGUI guildNameText;
+    [SerializeField] private TextMeshProUGUI levelText;
+    [SerializeField] private TextMeshProUGUI characterNameText;
 
     private Transform cameraTransform;
     private CharacterStats myStats;
-
-    private void Awake()
-    {
-        // Baþlangýçta can barýný her zaman gizle, Initialize karar verecek.
-        healthSlider.gameObject.SetActive(false);
-    }
 
     private void Start()
     {
@@ -33,46 +27,33 @@ public class Nameplate_Controller : MonoBehaviour
     public void Initialize(CharacterStats stats)
     {
         myStats = stats;
-
-        if (stats.GetComponent<PlayerController>() != null) // Bu bir oyuncu mu?
-        {
-            // Evet, oyuncu. Sadece ismini göster, can barýný gizle.
-            healthSlider.gameObject.SetActive(false);
-            nameText.text = $"Lv. {stats.level} {stats.gameObject.name}";
-            // Oyuncunun kendi statlarý deðiþtiðinde isminin güncellenmesi için de dinleyebiliriz.
-            stats.OnStatsChanged += UpdatePlayerInfo;
-            UpdatePlayerInfo(stats);
-        }
-        else // Hayýr, bu bir canavar.
-        {
-            healthSlider.gameObject.SetActive(true);
-            stats.OnStatsChanged += UpdateMonsterInfo; // Artýk imzalar eþleþiyor.
-            UpdateMonsterInfo(stats);
-        }
+        stats.OnStatsChanged += UpdateInfo;
+        UpdateInfo(stats);
     }
 
-    // Canavarýn bilgilerini güncelleyen fonksiyon.
-    private void UpdateMonsterInfo(CharacterStats stats)
+    private void UpdateInfo(CharacterStats stats)
     {
         if (stats == null) return;
-        nameText.text = $"Lv. {stats.level} {stats.gameObject.name}";
-        healthSlider.maxValue = stats.maxHealth;
-        healthSlider.value = stats.currentHealth;
-    }
 
-    // Oyuncunun bilgilerini güncelleyen fonksiyon (can barý olmadan).
-    private void UpdatePlayerInfo(CharacterStats stats)
-    {
-        if (stats == null) return;
-        nameText.text = $"Lv. {stats.level} {stats.gameObject.name}";
+        if (!string.IsNullOrEmpty(stats.guildName))
+        {
+            guildNameText.gameObject.SetActive(true);
+            guildNameText.text = $"[{stats.guildName}]";
+        }
+        else
+        {
+            guildNameText.gameObject.SetActive(false);
+        }
+
+        levelText.text = $"Lv. {stats.level}";
+        characterNameText.text = stats.characterName;
     }
 
     private void OnDestroy()
     {
         if (myStats != null)
         {
-            myStats.OnStatsChanged -= UpdateMonsterInfo;
-            myStats.OnStatsChanged -= UpdatePlayerInfo;
+            myStats.OnStatsChanged -= UpdateInfo;
         }
     }
 }
