@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 15a8bd3b7ac04b840b898864f0d72dc8, type: 3}
   m_Name: "Ba\u015Flang\u0131\xE7 ovas\u0131"
   m_EditorClassIdentifier: Assembly-CSharp::RegionData
-  regionName: 1231231
+  regionName: OVA
