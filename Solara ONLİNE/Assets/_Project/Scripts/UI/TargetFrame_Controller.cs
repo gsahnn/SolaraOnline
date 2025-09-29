@@ -35,10 +35,14 @@ public class TargetFrame_Controller : MonoBehaviour
     {
         PlayerTargeting playerTargeting = FindFirstObjectByType<PlayerTargeting>();
         if (playerTargeting != null) playerTargeting.OnTargetSelected -= UpdateTargetFrame;
+
+        // Emin olmak için, hala dinliyorsak abonelikten çýk
+        if (currentTargetStats != null) currentTargetStats.OnStatsChanged -= UpdateHealthBar;
     }
 
     private void UpdateTargetFrame(Transform newTarget)
     {
+        // Önceki hedefin çemberini yok et ve event aboneliðini bitir.
         if (currentTargetCircleInstance != null) Destroy(currentTargetCircleInstance);
         if (currentTargetStats != null) currentTargetStats.OnStatsChanged -= UpdateHealthBar;
 
@@ -46,7 +50,7 @@ public class TargetFrame_Controller : MonoBehaviour
         {
             targetFramePanel.SetActive(true);
             currentTargetStats.OnStatsChanged += UpdateHealthBar;
-            UpdateHealthBar();
+            UpdateHealthBar(currentTargetStats); // Ýlk çaðrýyý parametre ile yap.
 
             if (targetCirclePrefab != null)
             {
@@ -60,8 +64,11 @@ public class TargetFrame_Controller : MonoBehaviour
         }
     }
 
-    private void UpdateHealthBar()
+    // --- DÜZELTÝLMÝÞ FONKSÝYON ---
+    // Bu fonksiyon artýk bir CharacterStats parametresi alýyor ve event'in imzasýný karþýlýyor.
+    private void UpdateHealthBar(CharacterStats stats)
     {
+        // Hangi stat'larý güncelleyeceðimizi zaten 'currentTargetStats' deðiþkeninde biliyoruz.
         if (currentTargetStats != null)
         {
             targetNameText.text = $"Lv. {currentTargetStats.level} {currentTargetStats.gameObject.name}";

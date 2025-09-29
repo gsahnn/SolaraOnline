@@ -1,12 +1,14 @@
 using UnityEngine;
 using System;
+using System.Collections.Generic;
 
 public class CharacterStats : MonoBehaviour
 {
+    [Header("UI Referansý")]
+    [SerializeField] private GameObject nameplatePrefab;
+
     [Header("Ekonomi")]
-    public int gold = 1000; // Baþlangýç parasý
-
-
+    public int gold = 1000;
 
     [Header("Seviye ve Tecrübe")]
     public int level = 1;
@@ -32,15 +34,12 @@ public class CharacterStats : MonoBehaviour
     public int defense;
 
     [Header("Ödüller (Sadece Canavarlar Ýçin)")]
-    public int experienceGranted = 50; // Ödül EXP'si buraya taþýndý.
+    public int experienceGranted = 50;
 
-    // --- YENÝ EKLENEN EVENT'LER ---
-    // MonsterController bu olaylarý dinleyecek.
+    // EVENT'LER: Diðer sistemler bu olaylarý dinler.
     public event Action<CharacterStats> OnDeath;
     public event Action OnDamageTaken;
-    // --------------------------------
-
-    public event Action OnStatsChanged;
+    public event Action<CharacterStats> OnStatsChanged;
 
     private void Awake()
     {
@@ -49,16 +48,25 @@ public class CharacterStats : MonoBehaviour
         currentMana = maxMana;
     }
 
+    private void Start()
+    {
+        if (nameplatePrefab != null)
+        {
+            GameObject nameplateInstance = Instantiate(nameplatePrefab, transform);
+            nameplateInstance.transform.localPosition = new Vector3(0, 2.2f, 0);
+            nameplateInstance.GetComponent<Nameplate_Controller>()?.Initialize(this);
+        }
+        OnStatsChanged?.Invoke(this);
+    }
+
     public void TakeDamage(int damage, CharacterStats attacker)
     {
-        if (currentHealth <= 0) return; // Zaten ölmüþse tekrar hasar alma.
-
+        if (currentHealth <= 0) return;
         int damageTaken = Mathf.Max(damage - defense, 1);
         currentHealth -= damageTaken;
 
-        // Hasar alýndýðýnda OnDamageTaken event'ini tetikle.
         OnDamageTaken?.Invoke();
-        OnStatsChanged?.Invoke(); // UI güncellemeleri için
+        OnStatsChanged?.Invoke(this);
 
         if (currentHealth <= 0)
         {
@@ -69,12 +77,9 @@ public class CharacterStats : MonoBehaviour
 
     private void Die(CharacterStats killer)
     {
-        // Ölüm event'ini tetikle.
         OnDeath?.Invoke(killer);
     }
 
-    // Deðiþmeyen diðer tüm fonksiyonlar
-    #region Unchanged Methods
     public void CalculateAllStats()
     {
         maxHealth = vitality * 10;
@@ -82,30 +87,32 @@ public class CharacterStats : MonoBehaviour
         minDamage = strength;
         maxDamage = strength + 4;
         defense = dexterity / 2;
-        OnStatsChanged?.Invoke();
+        OnStatsChanged?.Invoke(this);
     }
+
     public void AddExperience(int amount)
     {
         currentExp += amount;
         while (currentExp >= expToNextLevel)
         {
+            currentExp -= expToNextLevel;
             LevelUp();
         }
-        OnStatsChanged?.Invoke();
+        OnStatsChanged?.Invoke(this);
     }
+
     private void LevelUp()
     {
         level++;
-        currentExp -= expToNextLevel;
         expToNextLevel = Mathf.RoundToInt(expToNextLevel * 1.5f);
         statPointsToAssign += 5;
-        vitality += 2;
-        strength += 2;
+
         CalculateAllStats();
         currentHealth = maxHealth;
         currentMana = maxMana;
         Debug.Log(transform.name + " SEVÝYE ATLADI! Yeni seviye: " + level);
     }
+
     public void AssignStatPoint(string statName)
     {
         if (statPointsToAssign > 0)
@@ -121,5 +128,4 @@ public class CharacterStats : MonoBehaviour
             CalculateAllStats();
         }
     }
-    #endregion
 }

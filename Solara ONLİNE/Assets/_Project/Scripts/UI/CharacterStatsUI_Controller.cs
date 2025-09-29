@@ -1,5 +1,6 @@
 using UnityEngine;
 using TMPro;
+using UnityEngine.UI;
 
 public class CharacterStatsUI_Controller : MonoBehaviour
 {
@@ -13,19 +14,18 @@ public class CharacterStatsUI_Controller : MonoBehaviour
     [SerializeField] private TextMeshProUGUI dexText;
     [SerializeField] private TextMeshProUGUI intText;
     [SerializeField] private TextMeshProUGUI pointsText;
-    [SerializeField] private GameObject strButton;
-    [SerializeField] private GameObject vitButton;
-    [SerializeField] private GameObject dexButton;
-    [SerializeField] private GameObject intButton;
+
+    [SerializeField] private Button strButton;
+    [SerializeField] private Button vitButton;
+    [SerializeField] private Button dexButton;
+    [SerializeField] private Button intButton;
 
     private CharacterStats playerStats;
 
     private void Awake()
     {
-        if (Instance != null && Instance != this) { Destroy(gameObject); }
-        else { Instance = this; }
-
-        characterStatsPanel.SetActive(false);
+        if (Instance != null) { Destroy(gameObject); } else { Instance = this; }
+        if (characterStatsPanel != null) characterStatsPanel.SetActive(false);
     }
 
     public void Initialize(CharacterStats stats)
@@ -33,6 +33,7 @@ public class CharacterStatsUI_Controller : MonoBehaviour
         if (playerStats != null) playerStats.OnStatsChanged -= UpdateUI;
         playerStats = stats;
         playerStats.OnStatsChanged += UpdateUI;
+        UpdateUI(stats);
     }
 
     private void OnDestroy()
@@ -40,38 +41,48 @@ public class CharacterStatsUI_Controller : MonoBehaviour
         if (playerStats != null) playerStats.OnStatsChanged -= UpdateUI;
     }
 
-    private void UpdateUI()
+    // Bu fonksiyon artýk OnStatsChanged event'inin (Action<CharacterStats>) imzasýný karþýlýyor.
+    private void UpdateUI(CharacterStats stats)
     {
-        if (playerStats == null) return;
+        if (stats == null) return;
 
-        hpText.text = $"HP: {playerStats.currentHealth} / {playerStats.maxHealth}";
-        mpText.text = $"MP: {playerStats.currentMana} / {playerStats.maxMana}";
-        strText.text = $"STR: {playerStats.strength}";
-        vitText.text = $"VIT: {playerStats.vitality}";
-        dexText.text = $"DEX: {playerStats.dexterity}";
-        intText.text = $"INT: {playerStats.intelligence}";
-        pointsText.text = $"Kalan Puan: {playerStats.statPointsToAssign}";
+        hpText.text = $"HP: {stats.currentHealth} / {stats.maxHealth}";
+        mpText.text = $"MP: {stats.currentMana} / {stats.maxMana}";
+        strText.text = $"STR: {stats.strength}";
+        vitText.text = $"VIT: {stats.vitality}";
+        dexText.text = $"DEX: {stats.dexterity}";
+        intText.text = $"INT: {stats.intelligence}";
+        pointsText.text = $"Kalan Puan: {stats.statPointsToAssign}";
 
-        bool hasPoints = playerStats.statPointsToAssign > 0;
-        strButton.SetActive(hasPoints);
-        vitButton.SetActive(hasPoints);
-        dexButton.SetActive(hasPoints);
-        intButton.SetActive(hasPoints);
-    }
-
-    public void TogglePanel()
-    {
-        characterStatsPanel.SetActive(!characterStatsPanel.activeSelf);
-        if (characterStatsPanel.activeSelf) UpdateUI();
-    }
-
-    public bool IsOpen()
-    {
-        return characterStatsPanel.activeSelf;
+        bool hasPoints = stats.statPointsToAssign > 0;
+        strButton.gameObject.SetActive(hasPoints);
+        vitButton.gameObject.SetActive(hasPoints);
+        dexButton.gameObject.SetActive(hasPoints);
+        intButton.gameObject.SetActive(hasPoints);
     }
 
     public void OnAssignStr() { if (playerStats != null) playerStats.AssignStatPoint("STR"); }
     public void OnAssignVit() { if (playerStats != null) playerStats.AssignStatPoint("VIT"); }
     public void OnAssignDex() { if (playerStats != null) playerStats.AssignStatPoint("DEX"); }
     public void OnAssignInt() { if (playerStats != null) playerStats.AssignStatPoint("INT"); }
+
+    public void TogglePanel()
+    {
+        if (characterStatsPanel != null)
+        {
+            bool isActive = !characterStatsPanel.activeSelf;
+            characterStatsPanel.SetActive(isActive);
+
+            if (isActive)
+            {
+                UpdateUI(playerStats);
+            }
+        }
+    }
+
+    // HATA VEREN EKSÝK FONKSÝYON ÝÇÝ
+    public bool IsOpen()
+    {
+        return characterStatsPanel != null && characterStatsPanel.activeSelf;
+    }
 }

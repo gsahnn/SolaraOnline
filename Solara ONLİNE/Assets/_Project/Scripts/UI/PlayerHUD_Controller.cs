@@ -1,4 +1,3 @@
-// PlayerHUD_Controller.cs (SINGLETON EKLENDÝ)
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -16,8 +15,7 @@ public class PlayerHUD_Controller : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance != null && Instance != this) { Destroy(gameObject); }
-        else { Instance = this; }
+        if (Instance != null) { Destroy(gameObject); } else { Instance = this; }
     }
 
     public void InitializeHUD(CharacterStats stats)
@@ -25,7 +23,7 @@ public class PlayerHUD_Controller : MonoBehaviour
         if (playerStats != null) playerStats.OnStatsChanged -= UpdateUI;
         playerStats = stats;
         playerStats.OnStatsChanged += UpdateUI;
-        UpdateUI();
+        UpdateUI(stats);
     }
 
     private void OnDestroy()
@@ -33,15 +31,17 @@ public class PlayerHUD_Controller : MonoBehaviour
         if (playerStats != null) playerStats.OnStatsChanged -= UpdateUI;
     }
 
-    private void UpdateUI()
+    // Bu fonksiyon artýk OnStatsChanged event'inin (Action<CharacterStats>) imzasýný karþýlýyor.
+    private void UpdateUI(CharacterStats stats)
     {
-        if (playerStats == null) return;
-        levelText.text = "Lv. " + playerStats.level;
-        healthSlider.maxValue = playerStats.maxHealth;
-        healthSlider.value = playerStats.currentHealth;
-        manaSlider.maxValue = playerStats.maxMana;
-        manaSlider.value = playerStats.currentMana;
-        expSlider.maxValue = playerStats.expToNextLevel;
-        expSlider.value = playerStats.currentExp;
+        if (stats == null) return;
+
+        levelText.text = "Lv. " + stats.level;
+        healthSlider.maxValue = stats.maxHealth;
+        healthSlider.value = stats.currentHealth;
+        manaSlider.maxValue = stats.maxMana;
+        manaSlider.value = stats.currentMana;
+        expSlider.maxValue = stats.expToNextLevel;
+        expSlider.value = stats.currentExp;
     }
 }

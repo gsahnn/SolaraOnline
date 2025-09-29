@@ -1,27 +1,32 @@
 using UnityEngine;
 using System;
+using System.Linq;
 
 public class PlayerTargeting : MonoBehaviour
 {
     public Transform currentTarget { get; private set; }
-
-    // Bu event, yeni bir hedef seçildiðinde veya hedef býrakýldýðýnda tetiklenir.
     public event Action<Transform> OnTargetSelected;
 
-    private Camera mainCamera;
-    [SerializeField] private LayerMask targetableLayers; // Inspector'dan Monster katmanýný seçeceðiz.
+    [Header("Hedefleme Ayarlarý")]
+    [SerializeField] private LayerMask targetableLayers;
 
-    private void Start()
+    private Camera mainCamera;
+
+    private void Awake()
     {
         mainCamera = Camera.main;
     }
 
-    // Bu fonksiyonu, giriþleri tek bir yerden yönetmek için PlayerController çaðýracak.
     public void HandleTargetingInput()
     {
-        // Fareye týklandýðýnda hedef seçmeyi dene
         if (Input.GetMouseButtonDown(0))
         {
+            // Eðer fare bir UI elemanýnýn üzerindeyse, hedefleme yapma.
+            if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+            {
+                return;
+            }
+
             Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out RaycastHit hit, 100f, targetableLayers))
             {
@@ -29,7 +34,6 @@ public class PlayerTargeting : MonoBehaviour
             }
             else
             {
-                // Boþluða týkladýysak, hedefi kaldýr.
                 ClearTarget();
             }
         }
@@ -40,7 +44,7 @@ public class PlayerTargeting : MonoBehaviour
         if (currentTarget != newTarget)
         {
             currentTarget = newTarget;
-            OnTargetSelected?.Invoke(currentTarget); // Yeni hedefi UI'a ve diðer sistemlere duyur.
+            OnTargetSelected?.Invoke(currentTarget);
         }
     }
 
@@ -49,7 +53,7 @@ public class PlayerTargeting : MonoBehaviour
         if (currentTarget != null)
         {
             currentTarget = null;
-            OnTargetSelected?.Invoke(null); // Hedefin kalktýðýný duyur.
+            OnTargetSelected?.Invoke(null);
         }
     }
 }
