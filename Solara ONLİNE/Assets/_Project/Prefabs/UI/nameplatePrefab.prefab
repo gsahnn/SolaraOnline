@@ -299,7 +299,7 @@ GameObject:
   - component: {fileID: 794745562208798351}
   - component: {fileID: 5496716849417090337}
   m_Layer: 0
-  m_Name: Nameplate
+  m_Name: nameplatePrefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -321,10 +321,10 @@ RectTransform:
   - {fileID: 6322145384476639195}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
+  m_SizeDelta: {x: -1820, y: -980}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &794745562208798351
 MonoBehaviour:
@@ -365,10 +365,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Nameplate_Controller
   guildNameText: {fileID: 5210466021411812722}
-  rankText: {fileID: 6598061835600713185}
   levelText: {fileID: 6445965901734183295}
   characterNameText: {fileID: 8981401377128881260}
-  rankDatabase: {fileID: 11400000, guid: ec4f55daa4c90114fb3a79ca6a71fdf6, type: 2}
 --- !u!1 &5126654896248559477
 GameObject:
   m_ObjectHideFlags: 0
