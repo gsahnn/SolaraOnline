@@ -12,4 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74ba0d7dc322fe245a5ae81abd62bcd3, type: 3}
   m_Name: RankDB
   m_EditorClassIdentifier: Assembly-CSharp::RankDatabase
-  allRanks: []
+  allRanks:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}

@@ -193,9 +193,11 @@ public class MonsterController : MonoBehaviour
         {
             killer.AddExperience(myStats.experienceGranted);
             if (killer.TryGetComponent(out QuestLog questLog))
-            {
+                if (Mathf.Abs(killer.level - myStats.level) <= 10)
+                {
                 questLog.AddQuestProgress(this.gameObject.name, 1);
-            }
+                    killer.ChangeAlignment(5);
+                }
         }
         DropLoot();
         StartCoroutine(DestroyAfterAnimation(5f));

@@ -136,4 +136,13 @@ public class CharacterStats : MonoBehaviour
             CalculateAllStats();
         }
     }
+    public void ChangeAlignment(int amount)
+    {
+        alignment += amount;
+        // Puanýn -20000 ile 20000 arasýnda kalmasýný saðla.
+        alignment = Mathf.Clamp(alignment, -20000, 20000);
+
+        Debug.Log(amount + " derece puaný deðiþti. Yeni puan: " + alignment);
+        OnStatsChanged?.Invoke(this); // Deðiþikliði Nameplate'e bildir.
+    }
 }
