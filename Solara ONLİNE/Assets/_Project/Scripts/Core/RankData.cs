@@ -1,10 +1,12 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "New Rank", menuName = "Solara/Data/Characters/Rank")]
-public class RankData : ScriptableObject
+// Bu bir [System.Serializable]'dýr, MonoBehaviour DEÐÝL.
+// Bu sayede RankDatabase'in Inspector'unda bir liste olarak görünebilir.
+[System.Serializable]
+public class Rank
 {
     public string rankName;
     public Color rankColor = Color.white;
-    public int minAlignment; // Bu rütbe için gereken minimum puan
-    public int maxAlignment; // Bu rütbe için gereken maksimum puan
+    public int minPoints;
+    public int maxPoints;
 }

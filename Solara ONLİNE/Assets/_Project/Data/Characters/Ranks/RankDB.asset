@@ -12,13 +12,40 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74ba0d7dc322fe245a5ae81abd62bcd3, type: 3}
   m_Name: RankDB
   m_EditorClassIdentifier: Assembly-CSharp::RankDatabase
-  allRanks:
-  - {fileID: 11400000, guid: 7b9ba6066648a0243a89f61144f6a356, type: 2}
-  - {fileID: 11400000, guid: a17a15f6a72ede740ac9dfd8452c74f0, type: 2}
-  - {fileID: 11400000, guid: 7bbf752a89c86904fab2acdb5f2167ce, type: 2}
-  - {fileID: 11400000, guid: b68a7b271c9324e468eaa44d4f8aa6be, type: 2}
-  - {fileID: 11400000, guid: 20b9730c4c094544c86ea653f7cc6747, type: 2}
-  - {fileID: 11400000, guid: 9bba204c02c32164e915d14c4d6ab051, type: 2}
-  - {fileID: 11400000, guid: f88fb273c2ecb464a8030513588e9d4c, type: 2}
-  - {fileID: 11400000, guid: 70dffeabcb0b9e141997b986368c424a, type: 2}
-  - {fileID: 11400000, guid: 5317e5cf14b2e9646b51fe5343cdaef2, type: 2}
+  ranks:
+  - rankName: Kahraman
+    rankColor: {r: 0, g: 1, b: 1, a: 1}
+    minPoints: 12000
+    maxPoints: 20000
+  - rankName: Soylu
+    rankColor: {r: 0, g: 0, b: 1, a: 1}
+    minPoints: 8000
+    maxPoints: 11999
+  - rankName: "\u0130yi"
+    rankColor: {r: 0.254902, g: 0.4117647, b: 0.882353, a: 1}
+    minPoints: 4000
+    maxPoints: 7999
+  - rankName: "Arkada\u015F\xE7a"
+    rankColor: {r: 0.3921569, g: 0.5843138, b: 0.9294118, a: 1}
+    minPoints: 1000
+    maxPoints: 3999
+  - rankName: .
+    rankColor: {r: 1, g: 1, b: 1, a: 0}
+    minPoints: -999
+    maxPoints: 999
+  - rankName: Agresif
+    rankColor: {r: 1, g: 0.3882353, b: 0.2784314, a: 1}
+    minPoints: -4000
+    maxPoints: -1000
+  - rankName: Hileli
+    rankColor: {r: 1, g: 0.2705882, b: 0, a: 1}
+    minPoints: -8000
+    maxPoints: -4001
+  - rankName: "K\xF6t\xFC Niyetli"
+    rankColor: {r: 0.6470588, g: 0.1647059, b: 0.1647059, a: 1}
+    minPoints: -12001
+    maxPoints: -8001
+  - rankName: Zalim
+    rankColor: {r: 0.8627452, g: 0.07843138, b: 0.2352941, a: 1}
+    minPoints: -20000
+    maxPoints: -12001

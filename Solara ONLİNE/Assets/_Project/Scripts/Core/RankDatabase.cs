@@ -1,15 +1,22 @@
 using UnityEngine;
 using System.Collections.Generic;
-using System.Linq;
 
-[CreateAssetMenu(fileName = "Rank Database", menuName = "Solara/Data/Characters/Rank Database")]
+// Bu bir ScriptableObject'tir. Proje dosyasý olarak yaþar.
+[CreateAssetMenu(fileName = "New RankDatabase", menuName = "Solara/Database/Rank Database")]
 public class RankDatabase : ScriptableObject
 {
-    public List<RankData> allRanks;
+    public List<Rank> ranks;
 
-    // Verilen puana uygun olan rütbeyi bulup döndürür.
-    public RankData GetRankForAlignment(int alignment)
+    // Verilen puana karþýlýk gelen Rank verisini bulan fonksiyon.
+    public Rank GetRankByPoints(int points)
     {
-        return allRanks.FirstOrDefault(rank => alignment >= rank.minAlignment && alignment <= rank.maxAlignment);
+        foreach (Rank rank in ranks)
+        {
+            if (points >= rank.minPoints && points <= rank.maxPoints)
+            {
+                return rank;
+            }
+        }
+        return null; // Uygun rütbe bulunamazsa boþ döndür.
     }
 }

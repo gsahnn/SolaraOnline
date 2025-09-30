@@ -3,16 +3,19 @@ using TMPro;
 
 public class Nameplate_Controller : MonoBehaviour
 {
-    [SerializeField] private TextMeshProUGUI guildNameText;
+    [Header("UI Element References")]
+    [SerializeField] private TextMeshProUGUI guildText;
     [SerializeField] private TextMeshProUGUI levelText;
-    [SerializeField] private TextMeshProUGUI characterNameText;
+    [SerializeField] private TextMeshProUGUI rankText;
+    [SerializeField] private TextMeshProUGUI nameText;
 
+    private CharacterStats linkedStats;
     private Transform cameraTransform;
-    private CharacterStats myStats;
 
     private void Start()
     {
-        cameraTransform = Camera.main?.transform;
+        if (Camera.main != null) { cameraTransform = Camera.main.transform; }
+        else { Debug.LogError("Sahnede 'MainCamera' tag'ine sahip bir kamera bulunamadý!", this.gameObject); }
     }
 
     private void LateUpdate()
@@ -24,36 +27,49 @@ public class Nameplate_Controller : MonoBehaviour
         }
     }
 
-    public void Initialize(CharacterStats stats)
+    public void Initialize(CharacterStats statsToLink)
     {
-        myStats = stats;
-        stats.OnStatsChanged += UpdateInfo;
-        UpdateInfo(stats);
+        linkedStats = statsToLink;
+        linkedStats.OnStatsInitialized += UpdateUI;
+        linkedStats.OnStatsChanged += UpdateUI;
     }
 
-    private void UpdateInfo(CharacterStats stats)
+    private void UpdateUI(CharacterStats stats)
     {
-        if (stats == null) return;
+        guildText.text = $"[{stats.guildName}]";
+        levelText.text = $"Lv {stats.level}";
+        nameText.text = stats.characterName;
 
-        if (!string.IsNullOrEmpty(stats.guildName))
+        if (stats.rankDatabase != null)
         {
-            guildNameText.gameObject.SetActive(true);
-            guildNameText.text = $"[{stats.guildName}]";
+            // Veritabanýndan doðru rütbeyi alýyoruz.
+            Rank rankData = stats.rankDatabase.GetRankByPoints(stats.alignment);
+
+            // KURAL: Rütbe bulunduysa VE adý "Tarafsýz" deðilse göster.
+            if (rankData != null && rankData.rankName != "Tarafsýz")
+            {
+                rankText.text = rankData.rankName;
+                rankText.color = rankData.rankColor;
+                rankText.gameObject.SetActive(true);
+            }
+            else
+            {
+                // Rütbe "Tarafsýz" ise veya bulunamadýysa gizle.
+                rankText.gameObject.SetActive(false);
+            }
         }
         else
         {
-            guildNameText.gameObject.SetActive(false);
+            rankText.gameObject.SetActive(false);
         }
-
-        levelText.text = $"Lv. {stats.level}";
-        characterNameText.text = stats.characterName;
     }
 
     private void OnDestroy()
     {
-        if (myStats != null)
+        if (linkedStats != null)
         {
-            myStats.OnStatsChanged -= UpdateInfo;
+            linkedStats.OnStatsInitialized -= UpdateUI;
+            linkedStats.OnStatsChanged -= UpdateUI;
         }
     }
 }

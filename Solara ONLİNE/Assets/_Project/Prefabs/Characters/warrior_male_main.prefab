@@ -1,5 +1,36 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &6089489559128244546
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4378071361842112773}
+  m_Layer: 0
+  m_Name: NameplateAnchor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4378071361842112773
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6089489559128244546}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.85, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5447714438033236767}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &5481041371609531636
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -798,7 +829,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5866666021909216657, guid: e788adbb781a64d4dbf529ea23adff2e, type: 3}
       propertyPath: m_ApplyRootMotion
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6171224769876457857, guid: e788adbb781a64d4dbf529ea23adff2e, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -982,7 +1013,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: e788adbb781a64d4dbf529ea23adff2e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4378071361842112773}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e788adbb781a64d4dbf529ea23adff2e, type: 3}
       insertIndex: -1
@@ -1146,7 +1180,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2777fefcfc3a16340bc3c24601d4aab4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CharacterStats
-  nameplatePrefab: {fileID: 5062246816582227864, guid: f9e90760d627c0d4a8c1f593fb8354fb, type: 3}
+  nameplatePrefab: {fileID: 4631889853081281802, guid: 28c4cc9968290cf4cacd24169dd1002b, type: 3}
+  nameplateAnchor: {fileID: 4378071361842112773}
+  rankDatabase: {fileID: 11400000, guid: ec4f55daa4c90114fb3a79ca6a71fdf6, type: 2}
   characterName: 
   guildName: 
   alignment: 0
@@ -1281,3 +1317,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   moveSpeed: 5
   rotationSpeed: 20
+--- !u!4 &5447714438033236767 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: e788adbb781a64d4dbf529ea23adff2e, type: 3}
+  m_PrefabInstance: {fileID: 5481041371609531636}
+  m_PrefabAsset: {fileID: 0}
