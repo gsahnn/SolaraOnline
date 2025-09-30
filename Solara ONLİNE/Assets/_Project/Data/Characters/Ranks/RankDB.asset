@@ -13,12 +13,12 @@ MonoBehaviour:
   m_Name: RankDB
   m_EditorClassIdentifier: Assembly-CSharp::RankDatabase
   allRanks:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 11400000, guid: 7b9ba6066648a0243a89f61144f6a356, type: 2}
+  - {fileID: 11400000, guid: a17a15f6a72ede740ac9dfd8452c74f0, type: 2}
+  - {fileID: 11400000, guid: 7bbf752a89c86904fab2acdb5f2167ce, type: 2}
+  - {fileID: 11400000, guid: b68a7b271c9324e468eaa44d4f8aa6be, type: 2}
+  - {fileID: 11400000, guid: 20b9730c4c094544c86ea653f7cc6747, type: 2}
+  - {fileID: 11400000, guid: 9bba204c02c32164e915d14c4d6ab051, type: 2}
+  - {fileID: 11400000, guid: f88fb273c2ecb464a8030513588e9d4c, type: 2}
+  - {fileID: 11400000, guid: 70dffeabcb0b9e141997b986368c424a, type: 2}
+  - {fileID: 11400000, guid: 5317e5cf14b2e9646b51fe5343cdaef2, type: 2}

@@ -1146,6 +1146,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2777fefcfc3a16340bc3c24601d4aab4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CharacterStats
+  nameplatePrefab: {fileID: 5062246816582227864, guid: f9e90760d627c0d4a8c1f593fb8354fb, type: 3}
+  characterName: 
+  guildName: 
+  alignment: 0
   gold: 1000
   level: 1
   currentExp: 0

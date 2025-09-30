@@ -11,8 +11,19 @@ public class Nameplate_Controller : MonoBehaviour
     [Header("Veritabaný")]
     [SerializeField] private RankDatabase rankDatabase;
 
+    private const string NeutralRankName = "Tarafsýz";
+
     private Transform cameraTransform;
     private CharacterStats myStats;
+
+    private void Awake()
+    {
+        if (guildNameText == null || rankText == null || levelText == null || characterNameText == null)
+            Debug.LogError($"{nameof(Nameplate_Controller)}: UI referanslarý atanmadý!");
+
+        if (rankDatabase == null)
+            Debug.LogError($"{nameof(Nameplate_Controller)}: RankDatabase referansý atanmadý!");
+    }
 
     private void Start()
     {
@@ -30,9 +41,12 @@ public class Nameplate_Controller : MonoBehaviour
 
     public void Initialize(CharacterStats stats)
     {
+        if (myStats != null)
+            myStats.OnStatsChanged -= UpdateInfo;
+
         myStats = stats;
-        stats.OnStatsChanged += UpdateInfo;
-        UpdateInfo(stats);
+        myStats.OnStatsChanged += UpdateInfo;
+        UpdateInfo(myStats);
     }
 
     private void UpdateInfo(CharacterStats stats)
@@ -40,8 +54,15 @@ public class Nameplate_Controller : MonoBehaviour
         if (stats == null) return;
 
         // Lonca
-        if (!string.IsNullOrEmpty(stats.guildName)) { /* ... */ }
-        else { guildNameText.gameObject.SetActive(false); }
+        if (!string.IsNullOrEmpty(stats.guildName))
+        {
+            guildNameText.text = stats.guildName;
+            guildNameText.gameObject.SetActive(true);
+        }
+        else
+        {
+            guildNameText.gameObject.SetActive(false);
+        }
 
         // Seviye ve Ýsim
         levelText.text = $"Lv. {stats.level}";
@@ -49,7 +70,7 @@ public class Nameplate_Controller : MonoBehaviour
 
         // --- YENÝ DERECE MANTIÐI ---
         RankData currentRank = rankDatabase.GetRankForAlignment(stats.alignment);
-        if (currentRank != null && currentRank.rankName != "Tarafsýz")
+        if (currentRank != null && currentRank.rankName != NeutralRankName)
         {
             rankText.gameObject.SetActive(true);
             rankText.text = currentRank.rankName;
