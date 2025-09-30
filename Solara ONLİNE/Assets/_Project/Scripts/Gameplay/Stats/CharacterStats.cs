@@ -3,6 +3,7 @@ using System;
 
 public class CharacterStats : MonoBehaviour
 {
+    // --- YENÝ EKLENEN SÝSTEM ENTEGRASYONU ---
     [Header("Sistem Entegrasyonu")]
     [Tooltip("Proje klasöründeki Nameplate Prefab'ýný buraya sürükleyin.")]
     [SerializeField] private GameObject nameplatePrefab;
@@ -11,14 +12,25 @@ public class CharacterStats : MonoBehaviour
     [Tooltip("Proje klasöründeki RankDatabase SO'sunu buraya sürükleyin.")]
     public RankDatabase rankDatabase;
 
+    // --- YENÝ EKLENEN HEDEFLEME UI BÝLGÝLERÝ ---
+    [Header("Hedefleme UI Bilgileri")]
+    [Tooltip("Canavarýn gücünü belirten metin (1.Seviye, Patron, Elit vb.)")]
+    public string characterGrade;
+    [Tooltip("Karakterin ýrkýný veya tipini belirten metin.")]
+    public string raceName;
+
+    // --- MEVCUT KÝMLÝK BÝLGÝLERÝN ---
     [Header("Kimlik Bilgileri")]
     public string characterName;
     public string guildName;
+
+    // --- MEVCUT ÞÖHRET VE DERECE SÝSTEMÝN ---
+    [Header("Þöhret ve Derece")]
     [Tooltip("Karakterin mevcut derece/þöhret puaný.")]
     public int alignment = 0;
 
-    // ... (Diðer tüm stat deðiþkenlerin burada yer alýyor, deðiþtirmeye gerek yok)
-    #region Diðer Deðiþkenler
+    // --- MEVCUT DÝÐER TÜM STATLARIN KORUNDU ---
+    #region Mevcut Statlar
     [Header("Ekonomi")]
     public int gold = 1000;
     [Header("Seviye ve Tecrübe")]
@@ -44,47 +56,48 @@ public class CharacterStats : MonoBehaviour
     public int experienceGranted = 50;
     #endregion
 
+    // --- GÜNCELLENMÝÞ EVENT SÝSTEMÝ ---
     public event Action<CharacterStats> OnDeath;
     public event Action OnDamageTaken;
-    public event Action<CharacterStats> OnStatsInitialized;
-    public event Action<CharacterStats> OnStatsChanged;
+    public event Action<CharacterStats> OnStatsInitialized; // Nameplate'in ÝLK kurulumu için.
+    public event Action<CharacterStats> OnStatsChanged;     // Sonraki TÜM güncellemeler için.
 
     private void Awake()
     {
         CalculateAllStats();
         currentHealth = maxHealth;
         currentMana = maxMana;
+
+        // Nameplate oluþturma sorumluluðu artýk burada.
         CreateNameplate();
     }
 
     private void Start()
     {
+        // Tüm UI'lara "Ben hazýrým, ilk bilgileri yükleyin" sinyalini gönder.
         OnStatsInitialized?.Invoke(this);
     }
 
+    // --- YENÝ NAMEPLATE OLUÞTURMA FONKSÝYONU ---
     private void CreateNameplate()
     {
-        if (nameplatePrefab == null || nameplateAnchor == null)
-        {
-            if (CompareTag("Player"))
-                Debug.LogError("Player için Nameplate Prefab veya Nameplate Anchor atanmamýþ!", this.gameObject);
-            return;
-        }
+        if (nameplatePrefab == null || nameplateAnchor == null) return;
 
         GameObject nameplateInstance = Instantiate(nameplatePrefab, nameplateAnchor.position, nameplateAnchor.rotation, nameplateAnchor);
-        nameplateInstance.GetComponent<Nameplate_Controller>()?.Initialize(this);
-    }
+        Nameplate_Controller controller = nameplateInstance.GetComponentInChildren<Nameplate_Controller>();
 
-    // --- Test için Update Fonksiyonu ---
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.T))
+        if (controller != null)
         {
-            ChangeAlignment(UnityEngine.Random.Range(-500, 500));
+            controller.Initialize(this);
+        }
+        else
+        {
+            Debug.LogError("Oluþturulan Nameplate prefab'ýnýn içinde Nameplate_Controller script'i bulunamadý!", nameplateInstance);
         }
     }
 
-    // ... (TakeDamage, Die, CalculateAllStats ve diðer tüm fonksiyonlarýn burada yer alýyor, deðiþtirmeye gerek yok)
+    // --- MEVCUT TÜM FONKSÝYONLARIN KORUNDU (DEÐÝÞÝKLÝK YOK) ---
+    // Bu fonksiyonlarýn içindeki OnStatsChanged çaðrýlarýn, UI'ýn güncellenmesini zaten saðlýyor.
     #region Mevcut Fonksiyonlar
     public void TakeDamage(int damage, CharacterStats attacker)
     {
@@ -92,56 +105,14 @@ public class CharacterStats : MonoBehaviour
         int damageTaken = Mathf.Max(damage - defense, 1);
         currentHealth -= damageTaken;
         OnDamageTaken?.Invoke();
-        OnStatsChanged?.Invoke(this);
+        OnStatsChanged?.Invoke(this); // Sinyal gönderiliyor.
         if (currentHealth <= 0) { currentHealth = 0; Die(attacker); }
     }
     private void Die(CharacterStats killer) { OnDeath?.Invoke(killer); }
-    public void CalculateAllStats()
-    {
-        maxHealth = vitality * 10;
-        maxMana = intelligence * 10;
-        minDamage = strength;
-        maxDamage = strength + 4;
-        defense = dexterity / 2;
-        OnStatsChanged?.Invoke(this);
-    }
-    public void AddExperience(int amount)
-    {
-        currentExp += amount;
-        while (currentExp >= expToNextLevel) { currentExp -= expToNextLevel; LevelUp(); }
-        OnStatsChanged?.Invoke(this);
-    }
-    private void LevelUp()
-    {
-        level++;
-        expToNextLevel = Mathf.RoundToInt(expToNextLevel * 1.5f);
-        statPointsToAssign += 5;
-        CalculateAllStats();
-        currentHealth = maxHealth;
-        currentMana = maxMana;
-        Debug.Log(transform.name + " SEVÝYE ATLADI! Yeni seviye: " + level);
-    }
-    public void AssignStatPoint(string statName)
-    {
-        if (statPointsToAssign > 0)
-        {
-            statPointsToAssign--;
-            switch (statName.ToUpper())
-            {
-                case "STR": strength++; break;
-                case "DEX": dexterity++; break;
-                case "VIT": vitality++; break;
-                case "INT": intelligence++; break;
-            }
-            CalculateAllStats();
-        }
-    }
-    public void ChangeAlignment(int amount)
-    {
-        alignment += amount;
-        alignment = Mathf.Clamp(alignment, -20000, 20000);
-        Debug.Log("Derece puaný deðiþti. Yeni puan: " + alignment);
-        OnStatsChanged?.Invoke(this);
-    }
+    public void CalculateAllStats() { maxHealth = vitality * 10; maxMana = intelligence * 10; minDamage = strength; maxDamage = strength + 4; defense = dexterity / 2; OnStatsChanged?.Invoke(this); }
+    public void AddExperience(int amount) { currentExp += amount; while (currentExp >= expToNextLevel) { currentExp -= expToNextLevel; LevelUp(); } OnStatsChanged?.Invoke(this); }
+    private void LevelUp() { level++; expToNextLevel = Mathf.RoundToInt(expToNextLevel * 1.5f); statPointsToAssign += 5; CalculateAllStats(); currentHealth = maxHealth; currentMana = maxMana; }
+    public void AssignStatPoint(string statName) { if (statPointsToAssign > 0) { statPointsToAssign--; switch (statName.ToUpper()) { case "STR": strength++; break; case "DEX": dexterity++; break; case "VIT": vitality++; break; case "INT": intelligence++; break; } CalculateAllStats(); } }
+    public void ChangeAlignment(int amount) { alignment += amount; alignment = Mathf.Clamp(alignment, -20000, 20000); OnStatsChanged?.Invoke(this); }
     #endregion
 }

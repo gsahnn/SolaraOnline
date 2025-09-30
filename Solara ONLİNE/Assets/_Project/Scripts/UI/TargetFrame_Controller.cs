@@ -2,78 +2,86 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-public class TargetFrame_Controller : MonoBehaviour
+public class TargetFrame_UI : MonoBehaviour
 {
-    public static TargetFrame_Controller Instance { get; private set; }
+    [Header("UI Elementleri")]
+    [SerializeField] private GameObject targetFrameObject;
+    [SerializeField] private TextMeshProUGUI infoText;
+    [SerializeField] private Image healthBarFill; // Slider yerine doðrudan Image kullanýyoruz.
+    [SerializeField] private TextMeshProUGUI raceText;
+    [SerializeField] private Button closeButton;
 
-    [Header("UI Referanslarý")]
-    [SerializeField] private GameObject targetFramePanel;
-    [SerializeField] private TextMeshProUGUI targetNameText;
-    [SerializeField] private Slider targetHealthSlider;
+    private CharacterStats currentTrackedStats;
 
-    [Header("Dünya Referanslarý")]
-    [SerializeField] private GameObject targetCirclePrefab;
-
-    private CharacterStats currentTargetStats;
-    private GameObject currentTargetCircleInstance;
-
-    private void Awake()
+    private void Start()
     {
-        if (Instance != null) { Destroy(gameObject); } else { Instance = this; }
-    }
-
-    public void Initialize(PlayerTargeting playerTargeting)
-    {
-        if (playerTargeting != null)
-            playerTargeting.OnTargetSelected += UpdateTargetFrame;
-
-        if (targetFramePanel != null)
-            targetFramePanel.SetActive(false);
+        PlayerTargeting.OnTargetSelected += OnTargetChanged;
+        closeButton.onClick.AddListener(OnCloseButtonPressed);
+        targetFrameObject.SetActive(false);
     }
 
     private void OnDestroy()
     {
-        PlayerTargeting playerTargeting = FindFirstObjectByType<PlayerTargeting>();
-        if (playerTargeting != null) playerTargeting.OnTargetSelected -= UpdateTargetFrame;
-
-        // Emin olmak için, hala dinliyorsak abonelikten çýk
-        if (currentTargetStats != null) currentTargetStats.OnStatsChanged -= UpdateHealthBar;
+        PlayerTargeting.OnTargetSelected -= OnTargetChanged;
+        StopTrackingCurrentTarget();
     }
 
-    private void UpdateTargetFrame(Transform newTarget)
+    // Hedef deðiþtiðinde bu fonksiyon çaðrýlýr.
+    private void OnTargetChanged(CharacterStats newTarget)
     {
-        // Önceki hedefin çemberini yok et ve event aboneliðini bitir.
-        if (currentTargetCircleInstance != null) Destroy(currentTargetCircleInstance);
-        if (currentTargetStats != null) currentTargetStats.OnStatsChanged -= UpdateHealthBar;
+        StopTrackingCurrentTarget(); // Önceki hedefi dinlemeyi býrak.
 
-        if (newTarget != null && newTarget.TryGetComponent(out currentTargetStats))
+        if (newTarget == null)
         {
-            targetFramePanel.SetActive(true);
-            currentTargetStats.OnStatsChanged += UpdateHealthBar;
-            UpdateHealthBar(currentTargetStats); // Ýlk çaðrýyý parametre ile yap.
+            targetFrameObject.SetActive(false);
+            return;
+        }
 
-            if (targetCirclePrefab != null)
-            {
-                currentTargetCircleInstance = Instantiate(targetCirclePrefab, newTarget.position, newTarget.rotation, newTarget);
-            }
+        currentTrackedStats = newTarget;
+        currentTrackedStats.OnStatsChanged += UpdateHealthUI; // Yeni hedefin can deðiþikliklerini dinlemeye baþla.
+
+        targetFrameObject.SetActive(true);
+        UpdateAllUI(currentTrackedStats); // Tüm UI'ý ilk verilerle doldur.
+    }
+
+    // Sadece can deðiþtiðinde çaðrýlýr (daha performanslý).
+    private void UpdateHealthUI(CharacterStats stats)
+    {
+        if (stats.maxHealth > 0)
+        {
+            healthBarFill.fillAmount = (float)stats.currentHealth / stats.maxHealth;
+        }
+    }
+
+    // Sadece ilk hedef alýndýðýnda veya statlar sýfýrlandýðýnda çaðrýlýr.
+    private void UpdateAllUI(CharacterStats stats)
+    {
+        infoText.text = $"Lv.{stats.level} ({stats.characterGrade}) {stats.characterName}";
+
+        if (!string.IsNullOrEmpty(stats.raceName))
+        {
+            raceText.text = stats.raceName;
+            raceText.gameObject.SetActive(true);
         }
         else
         {
-            currentTargetStats = null;
-            targetFramePanel.SetActive(false);
+            raceText.gameObject.SetActive(false);
         }
+
+        UpdateHealthUI(stats);
     }
 
-    // --- DÜZELTÝLMÝÞ FONKSÝYON ---
-    // Bu fonksiyon artýk bir CharacterStats parametresi alýyor ve event'in imzasýný karþýlýyor.
-    private void UpdateHealthBar(CharacterStats stats)
+    private void OnCloseButtonPressed()
     {
-        // Hangi stat'larý güncelleyeceðimizi zaten 'currentTargetStats' deðiþkeninde biliyoruz.
-        if (currentTargetStats != null)
+        PlayerTargeting.Instance.ClearTarget();
+    }
+
+    private void StopTrackingCurrentTarget()
+    {
+        if (currentTrackedStats != null)
         {
-            targetNameText.text = $"Lv. {currentTargetStats.level} {currentTargetStats.gameObject.name}";
-            targetHealthSlider.maxValue = currentTargetStats.maxHealth;
-            targetHealthSlider.value = currentTargetStats.currentHealth;
+            currentTrackedStats.OnStatsChanged -= UpdateHealthUI;
+            currentTrackedStats = null;
         }
     }
 }
