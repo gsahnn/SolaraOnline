@@ -1,7 +1,5 @@
-// SkillBar_Controller.cs (SINGLETON EKLENDÝ)
 using System.Collections.Generic;
 using UnityEngine;
-
 
 public class SkillBar_Controller : MonoBehaviour
 {
@@ -21,7 +19,6 @@ public class SkillBar_Controller : MonoBehaviour
 
     public void Initialize(SkillHolder skillHolder)
     {
-        Debug.Log("<color=green>SKILL BAR INITIALIZE ÇAÐRILDI! Oyuncu bulundu!</color>", this.gameObject);
         if (playerSkillHolder != null) playerSkillHolder.OnSkillsUpdated -= UpdateSkillBarUI;
 
         playerSkillHolder = skillHolder;
@@ -57,11 +54,13 @@ public class SkillBar_Controller : MonoBehaviour
         {
             if (i < playerSkillHolder.skills.Count)
             {
-                slotUIControllers[i].UpdateSlot(playerSkillHolder.skills[i]);
+                // --- DÜZELTME BURADA: Fonksiyon adýný 'UpdateSlotUI' olarak güncelledik. ---
+                slotUIControllers[i].UpdateSlotUI(playerSkillHolder.skills[i]);
             }
             else
             {
-                slotUIControllers[i].UpdateSlot(null);
+                // --- DÜZELTME BURADA: Fonksiyon adýný 'UpdateSlotUI' olarak güncelledik. ---
+                slotUIControllers[i].UpdateSlotUI(null);
             }
         }
     }

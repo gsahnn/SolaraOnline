@@ -18,17 +18,17 @@ public class SkillHolder : MonoBehaviour
     private void Update()
     {
         bool cooldownUpdated = false;
-        foreach (var skill in skills)
+        foreach (var skillSlot in skills)
         {
-            if (skill.IsOnCooldown())
+            if (skillSlot.IsOnCooldown())
             {
-                skill.UpdateCooldown(Time.deltaTime);
+                skillSlot.UpdateCooldown(Time.deltaTime);
                 cooldownUpdated = true;
             }
         }
         if (cooldownUpdated)
         {
-            OnSkillsUpdated?.Invoke();
+            OnSkillsUpdated?.Invoke(); // UI'a bekleme sürelerinin güncellendiðini bildir.
         }
     }
 
@@ -37,12 +37,12 @@ public class SkillHolder : MonoBehaviour
         if (skillData != null && !skills.Any(s => s.skillData == skillData))
         {
             skills.Add(new SkillSlot(skillData));
-            Debug.Log("<color=green>BAÞARILI:</color> " + skillData.name + " yeteneði SkillHolder'a eklendi.");
             OnSkillsUpdated?.Invoke();
         }
     }
 
-    public void UseSkill(int skillIndex, MonsterController target)
+    // Parametre olarak artýk genel bir CharacterStats alýr. Bu, hem canavarlara hem de oyunculara yetenek kullanabilmeyi saðlar.
+    public void UseSkill(int skillIndex, CharacterStats targetStats)
     {
         if (skillIndex < 0 || skillIndex >= skills.Count) return;
 
@@ -63,16 +63,18 @@ public class SkillHolder : MonoBehaviour
         myStats.currentMana -= skillSlot.skillData.manaCost;
         skillSlot.PutOnCooldown();
 
-        Debug.Log(skillSlot.skillData.skillName + " kullanýldý!");
+        Debug.Log(myStats.name + ", " + skillSlot.skillData.skillName + " yeteneðini " + (targetStats != null ? targetStats.name : "boþluða") + " kullandý!");
 
         if (skillSlot.skillData.type == SkillType.Damage)
         {
-            if (target != null && target.TryGetComponent(out CharacterStats targetStats))
+            if (targetStats != null)
             {
                 int baseDamage = skillSlot.skillData.baseDamage;
                 float multiplier = skillSlot.skillData.damageMultiplier;
                 int finalDamage = baseDamage + Mathf.RoundToInt(myStats.intelligence * multiplier);
-                targetStats.TakeDamage(finalDamage, myStats);
+
+                // Hasarý ve yere düþürme bilgisini hedefin CharacterStats'ýna gönder.
+                targetStats.TakeDamage(finalDamage, myStats, skillSlot.skillData.causesKnockdown);
             }
         }
 

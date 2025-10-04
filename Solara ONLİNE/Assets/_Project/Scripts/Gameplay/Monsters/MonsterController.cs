@@ -3,56 +3,9 @@ using UnityEngine.AI;
 using System.Collections;
 using System.Linq;
 
-// ... (Enum tanýmlamalarý ayný kalacak) ...
-
 [RequireComponent(typeof(CharacterStats), typeof(NavMeshAgent), typeof(Animator))]
 public class MonsterController : MonoBehaviour
 {
-    // ... (Deðiþkenlerin hepsi ayný kalacak) ...
-
-    private void UpdateMovementAndRotation()
-    {
-        animator.SetFloat("Speed", agent.velocity.magnitude / agent.speed);
-
-        if (agent.velocity.magnitude > 0.1f)
-        {
-            // --- DEÐÝÞÝKLÝK BURADA ---
-            // Modelin ileri yönü (Z ekseni) ters olduðu için,
-            // gideceði yönün (-1 ile çarpýlmýþ) tam tersine bakmasýný söylüyoruz.
-            Quaternion lookRotation = Quaternion.LookRotation(-agent.velocity.normalized);
-            transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * rotationSpeed);
-        }
-    }
-
-    private void UpdateAttackingState()
-    {
-        if (playerTarget == null || Vector3.Distance(transform.position, playerTarget.position) > attackRange)
-        {
-            ChangeState(AIState.Chasing);
-            return;
-        }
-
-        agent.ResetPath();
-
-        Vector3 directionToPlayer = (playerTarget.position - transform.position).normalized;
-
-        // --- DEÐÝÞÝKLÝK BURADA ---
-        // Oyuncuya bakarken de ayný þekilde yönü ters çeviriyoruz.
-        Quaternion lookRotation = Quaternion.LookRotation(-new Vector3(directionToPlayer.x, 0, directionToPlayer.z));
-        transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * rotationSpeed);
-
-        attackCooldownTimer -= Time.deltaTime;
-        if (attackCooldownTimer <= 0)
-        {
-            attackCooldownTimer = timeBetweenAttacks;
-            animator.SetTrigger("Attack");
-        }
-    }
-
-    // ... Geri kalan tüm fonksiyonlar (Awake, Start, Update, diðer state'ler vb.) HÝÇBÝR DEÐÝÞÝKLÝK OLMADAN AYNI KALACAK ...
-
-    #region Full Unchanged Code
-    // Bu bölgedeki kodlarda hiçbir deðiþiklik yok. Sadece tam script'i saðlamak için buradalar.
     public enum AITemperament { Passive, Aggressive }
     public enum AIState { Idle, Patrolling, Chasing, Attacking, Dead }
 
@@ -85,28 +38,40 @@ public class MonsterController : MonoBehaviour
         agent = GetComponent<NavMeshAgent>();
         myStats = GetComponent<CharacterStats>();
         animator = GetComponent<Animator>();
+        // Player'ý bulmanýn en güvenli yolu PlayerManager veya benzeri bir singleton'dýr.
+        // Þimdilik bu þekilde býrakýyoruz.
         playerTarget = FindFirstObjectByType<PlayerController>()?.transform;
+
+        // Rotasyon kontrolünü NavMeshAgent'tan alýp kendi kodumuza veriyoruz.
         agent.updateRotation = false;
+
+        // Event'lere abone oluyoruz.
         myStats.OnDeath += HandleDeath;
         myStats.OnDamageTaken += OnDamageTaken;
     }
+
     private void Start()
     {
         startPosition = transform.position;
         ChangeState(AIState.Idle);
     }
+
     private void OnDestroy()
     {
+        // Hafýza sýzýntýlarýný önlemek için event'lerden aboneliði kaldýrýyoruz.
         if (myStats != null)
         {
             myStats.OnDeath -= HandleDeath;
             myStats.OnDamageTaken -= OnDamageTaken;
         }
     }
+
     private void Update()
     {
         if (currentState == AIState.Dead) return;
         stateTimer += Time.deltaTime;
+
+        // Her frame'de, durum ne olursa olsun, harekete göre animasyonu ve dönüþü güncelle.
         UpdateMovementAndRotation();
 
         switch (currentState)
@@ -117,18 +82,71 @@ public class MonsterController : MonoBehaviour
             case AIState.Attacking: UpdateAttackingState(); break;
         }
     }
+
     private void ChangeState(AIState newState)
     {
         if (currentState == newState) return;
         currentState = newState;
         stateTimer = 0f;
+
         if (newState == AIState.Idle)
         {
             agent.ResetPath();
             nextActionTime = Random.Range(minIdleTime, maxIdleTime);
-            animator.SetFloat("IdleVariation", (float)Random.Range(0, 3));
+            animator.SetFloat("IdleVariation", (float)Random.Range(0, 3)); // Idle çeþitliliði için
         }
     }
+
+    // --- AÞAÐIDAKÝ 3 FONKSÝYON, NÝHAÝ DÜZELTMELERÝ ÝÇERÝR ---
+
+    private void UpdateMovementAndRotation()
+    {
+        animator.SetFloat("Speed", agent.velocity.magnitude / agent.speed);
+
+        // Eðer NavMeshAgent'ý hareket ettiriyorsa, gittiði yöne doðru dön.
+        if (agent.velocity.magnitude > 0.1f)
+        {
+            Quaternion lookRotation = Quaternion.LookRotation(agent.velocity.normalized);
+            transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * rotationSpeed);
+        }
+    }
+
+    private void UpdateAttackingState()
+    {
+        if (playerTarget == null || Vector3.Distance(transform.position, playerTarget.position) > attackRange)
+        {
+            ChangeState(AIState.Chasing);
+            return;
+        }
+
+        agent.ResetPath();
+
+        Vector3 directionToPlayer = (playerTarget.position - transform.position).normalized;
+        Quaternion lookRotation = Quaternion.LookRotation(new Vector3(directionToPlayer.x, 0, directionToPlayer.z));
+        transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * rotationSpeed);
+
+        attackCooldownTimer -= Time.deltaTime;
+        if (attackCooldownTimer <= 0)
+        {
+            attackCooldownTimer = timeBetweenAttacks;
+            animator.SetTrigger("Attack");
+        }
+    }
+
+    public void AnimationEvent_MonsterDealDamage()
+    {
+        if (playerTarget != null && Vector3.Distance(transform.position, playerTarget.position) <= attackRange + 0.5f)
+        {
+            CharacterStats targetStats = playerTarget.GetComponent<CharacterStats>();
+            if (targetStats == null) return;
+
+            // DÜZELTME: TakeDamage fonksiyonunu 3 parametre ile doðru bir þekilde çaðýrýyoruz.
+            // Canavarýn normal vuruþlarý yere düþürmediði için 'false' gönderiyoruz.
+            targetStats.TakeDamage(Random.Range(myStats.minDamage, myStats.maxDamage + 1), myStats, false);
+        }
+    }
+
+    #region Mevcut AI Fonksiyonlarý (DEÐÝÞÝKLÝK YOK)
     private void UpdateIdleState()
     {
         if (temperament == AITemperament.Aggressive && CanSeePlayer()) { ChangeState(AIState.Chasing); return; }
@@ -138,6 +156,7 @@ public class MonsterController : MonoBehaviour
             GoToNewPatrolPoint();
         }
     }
+
     private void UpdatePatrollingState()
     {
         if (temperament == AITemperament.Aggressive && CanSeePlayer()) { ChangeState(AIState.Chasing); return; }
@@ -146,12 +165,14 @@ public class MonsterController : MonoBehaviour
             ChangeState(AIState.Idle);
         }
     }
+
     private void GoToNewPatrolPoint()
     {
         Vector3 randomPoint = startPosition + Random.insideUnitSphere * patrolRadius;
         NavMesh.SamplePosition(randomPoint, out NavMeshHit hit, patrolRadius, NavMesh.AllAreas);
         agent.SetDestination(hit.position);
     }
+
     private void UpdateChasingState()
     {
         if (playerTarget == null || !CanSeePlayer()) { ChangeState(AIState.Patrolling); return; }
@@ -165,13 +186,7 @@ public class MonsterController : MonoBehaviour
             agent.SetDestination(playerTarget.position);
         }
     }
-    public void AnimationEvent_MonsterDealDamage()
-    {
-        if (playerTarget != null && Vector3.Distance(transform.position, playerTarget.position) <= attackRange + 0.5f)
-        {
-            playerTarget.GetComponent<CharacterStats>().TakeDamage(Random.Range(myStats.minDamage, myStats.maxDamage + 1), myStats);
-        }
-    }
+
     private void OnDamageTaken()
     {
         if (currentState != AIState.Dead)
@@ -180,6 +195,7 @@ public class MonsterController : MonoBehaviour
             if (currentState != AIState.Attacking) animator.SetTrigger("Damage");
         }
     }
+
     private void HandleDeath(CharacterStats killer)
     {
         if (currentState == AIState.Dead) return;
@@ -195,35 +211,38 @@ public class MonsterController : MonoBehaviour
             if (killer.TryGetComponent(out QuestLog questLog))
                 if (Mathf.Abs(killer.level - myStats.level) <= 10)
                 {
-                questLog.AddQuestProgress(this.gameObject.name, 1);
+                    questLog.AddQuestProgress(this.gameObject.name, 1);
                     killer.ChangeAlignment(5);
                 }
         }
         DropLoot();
         StartCoroutine(DestroyAfterAnimation(5f));
     }
+
     private IEnumerator DestroyAfterAnimation(float delay)
     {
         yield return new WaitForSeconds(delay);
         Destroy(gameObject);
     }
+
     private bool CanSeePlayer()
     {
         if (playerTarget == null) return false;
         return Vector3.Distance(transform.position, playerTarget.position) <= sightRange;
     }
+
     private void DropLoot()
     {
         if (lootTable == null) return;
         foreach (var lootItem in lootTable.possibleLoot)
         {
-            float randomChance = Random.Range(0f, 100f);
-            if (randomChance <= lootItem.dropChance)
+            if (Random.Range(0f, 100f) <= lootItem.dropChance)
             {
                 InstantiateLoot(lootItem.itemData);
             }
         }
     }
+
     private void InstantiateLoot(ItemData itemDataToDrop)
     {
         if (itemPickupPrefab != null)
@@ -233,6 +252,7 @@ public class MonsterController : MonoBehaviour
             pickupScript.Initialize(itemDataToDrop, 1);
         }
     }
+
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow;

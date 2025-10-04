@@ -1,118 +1,85 @@
 using UnityEngine;
 
-// Gerekli component'lerin Player objesinde olmasýný zorunlu kýlar.
-[RequireComponent(typeof(CharacterController))]
-[RequireComponent(typeof(Animator))]
-[RequireComponent(typeof(PlayerTargeting))]
-[RequireComponent(typeof(PlayerCombatController))]
-[RequireComponent(typeof(CharacterStats))]
-[RequireComponent(typeof(QuestLog))]
+[RequireComponent(typeof(Animator), typeof(PlayerTargeting), typeof(PlayerCombatController))]
 public class PlayerController : MonoBehaviour
 {
-    [Header("Hareket Ayarlarý")]
-    [SerializeField] private float moveSpeed = 6f;
-    [SerializeField] private float rotationSpeed = 20f;
-
-    // Gerekli component'ler için referanslar
-    private CharacterController controller;
     private Animator animator;
     private PlayerTargeting playerTargeting;
-    private PlayerCombatController playerCombat;
-    private Camera mainCamera;
+
+    // CombatController referansÄ±na artÄ±k ihtiyacÄ±mÄ±z yok, Ã§Ã¼nkÃ¼ girdiyi doÄŸrudan Animator'e veriyoruz.
 
     private void Awake()
     {
-        // Baþlangýçta tüm component referanslarýný alýyoruz.
-        controller = GetComponent<CharacterController>();
         animator = GetComponent<Animator>();
         playerTargeting = GetComponent<PlayerTargeting>();
-        playerCombat = GetComponent<PlayerCombatController>();
-        mainCamera = Camera.main;
     }
 
     private void Update()
     {
-        // Eðer herhangi bir UI paneli açýksa, karakter kontrolünü devre dýþý býrak.
         if (IsAnyUIPanelOpen())
         {
-            animator.SetFloat("Speed", 0f); // Karakterin koþma animasyonunu durdur.
+            // Paneller aÃ§Ä±ksa tÃ¼m hareket ve saldÄ±rÄ± girdilerini sÄ±fÄ±rla.
+            animator.SetFloat("Speed", 0f);
+            animator.SetBool("IsAttacking", false);
             return;
         }
 
-        // Karakterin mevcut animasyon durumunu kontrol et (saldýrýyor mu?)
-        bool isAttacking = animator.GetCurrentAnimatorStateInfo(0).IsTag("Attack");
-
-        // Karakterin dönüþünü her zaman kontrol et (hedefe kilitlenme).
-        HandleRotation();
-
-        // Sadece saldýrmýyorsa hareket etmesine izin ver.
-        if (!isAttacking)
-        {
-            HandleMovement();
-        }
-
-        // Diðer oyuncu girdilerini (hedefleme, saldýrma tuþu vb.) iþle.
-        HandleInput();
+        HandleMovementInput();
+        HandleCombatInput();
+        HandleTargetingInput(); // Hedefleme hala kodla yÃ¶netiliyor.
+        HandleRotation(); // Rotasyon da kodla yÃ¶netilmeli.
     }
 
-    private void HandleMovement()
+    private void HandleMovementInput()
     {
-        float horizontal = Input.GetAxisRaw("Horizontal");
-        float vertical = Input.GetAxisRaw("Vertical");
-        Vector3 direction = new Vector3(horizontal, 0f, vertical).normalized;
+        float vertical = Input.GetAxis("Vertical");
+        float horizontal = Input.GetAxis("Horizontal");
+        Vector3 direction = new Vector3(horizontal, 0f, vertical);
 
-        // Animator'deki "Speed" parametresini güncelleyerek yürüme/koþma animasyonunu tetikle.
-        animator.SetFloat("Speed", direction.magnitude);
+        // HÄ±z bilgisini Animator'e gÃ¶nder. Hareketi Root Motion kendisi yapacak.
+        animator.SetFloat("Speed", direction.magnitude, 0.1f, Time.deltaTime);
+    }
 
-        if (direction.magnitude >= 0.1f)
+    private void HandleCombatInput()
+    {
+        // SaldÄ±rÄ± isteÄŸini doÄŸrudan ve sadece Animator'e iletiyoruz.
+        if (Input.GetKey(KeyCode.Space))
         {
-            // CharacterController'ý kullanarak karakteri hareket ettir.
-            controller.Move(direction * moveSpeed * Time.deltaTime);
+            animator.SetBool("IsAttacking", true);
+        }
+        if (Input.GetKeyUp(KeyCode.Space))
+        {
+            animator.SetBool("IsAttacking", false);
         }
     }
 
     private void HandleRotation()
     {
-        bool isMoving = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical")).magnitude >= 0.1f;
-
-        // Eðer bir hedef varsa...
+        // Hedef varsa, anÄ±nda hedefe dÃ¶n. Root Motion dÃ¶nÃ¼ÅŸÃ¼ etkilemez.
         if (playerTargeting.currentTarget != null)
         {
-            // --- YAPILAN TEK KRÝTÝK DEÐÝÞÝKLÝK BURADA ---
-            // Hedefin CharacterStats component'inden transform'una, oradan da position'ýna eriþiyoruz.
-            Vector3 directionToTarget = playerTargeting.currentTarget.transform.position - transform.position;
-            directionToTarget.y = 0; // Y ekseninde dönmesini engelle.
-            transform.rotation = Quaternion.LookRotation(directionToTarget); // Anýnda hedefe dön.
+            Vector3 targetDir = playerTargeting.currentTarget.transform.position - transform.position;
+            targetDir.y = 0;
+            if (targetDir != Vector3.zero)
+            {
+                transform.rotation = Quaternion.LookRotation(targetDir);
+            }
         }
-        // Eðer hedef yoksa VE karakter hareket ediyorsa...
-        else if (isMoving)
+        // EÄŸer hedef yoksa ve oyuncu hareket ediyorsa, gittiÄŸi yÃ¶ne yavaÅŸÃ§a dÃ¶n.
+        // Bu, Root Motion ile birlikte Ã§alÄ±ÅŸÄ±r Ã§Ã¼nkÃ¼ sadece rotasyonu etkiler.
+        else
         {
-            // ...karakterin, hareket ettiði yöne doðru yavaþça dönmesini saðla.
             float horizontal = Input.GetAxisRaw("Horizontal");
             float vertical = Input.GetAxisRaw("Vertical");
-            Vector3 direction = new Vector3(horizontal, 0f, vertical).normalized;
-            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(direction), Time.deltaTime * rotationSpeed);
+            Vector3 moveDirection = new Vector3(horizontal, 0f, vertical).normalized;
+
+            if (moveDirection != Vector3.zero)
+            {
+                transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(moveDirection), Time.deltaTime * 10f);
+            }
         }
     }
 
-    private void HandleInput()
-    {
-        // Hedefleme girdisini iþlemesi için PlayerTargeting script'ini bilgilendir.
-        playerTargeting.HandleTargetingInput();
-
-        // Boþluk tuþuna basýlý tutulursa saldýrý durumunu aktif et.
-        if (Input.GetKey(KeyCode.Space)) playerCombat.SetAttackingState(true);
-        if (Input.GetKeyUp(KeyCode.Space)) playerCombat.SetAttackingState(false);
-
-        // 'C' tuþuna basýldýðýnda karakter stat panelini aç/kapat.
-        if (Input.GetKeyDown(KeyCode.C)) CharacterStatsUI_Controller.Instance?.TogglePanel();
-    }
-
-    // Herhangi bir UI panelinin açýk olup olmadýðýný kontrol eden yardýmcý fonksiyon.
-    private bool IsAnyUIPanelOpen()
-    {
-        return (CharacterStatsUI_Controller.Instance != null && CharacterStatsUI_Controller.Instance.IsOpen()) ||
-               (ShopSystem.Instance != null && ShopSystem.Instance.IsOpen());
-        // Gelecekte buraya Envanter, Yetenekler vb. paneller de eklenebilir.
-    }
+    private void HandleTargetingInput() { playerTargeting.HandleTargetingInput(); }
+    private bool IsAnyUIPanelOpen() { return false; }
 }

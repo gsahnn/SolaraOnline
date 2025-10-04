@@ -1,17 +1,13 @@
-using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
+using System.Security.Cryptography;
+using UnityEngine;
+using UnityEngine.InputSystem;
 
-[System.Serializable]
-public class ComboAttackData
-{
-    public string triggerName; // Bu artýk kullanýlmýyor, ama referans için kalabilir.
-    public int actionID; // BU ÇOK ÖNEMLÝ! (Attack1 için 1, Attack2 için 2 vb.)
-    public float damageMultiplier = 1.0f;
-}
-
-[CreateAssetMenu(fileName = "New Combo Set", menuName = "Solara/Data/Combat/Combo Set")]
+// Bu script, projenizde AttackData.cs'in de bulunmasýný gerektirir.
+[CreateAssetMenu(fileName = "New ComboData", menuName = "Solara/Combat/Combo Data")]
 public class ComboData : ScriptableObject
 {
-    // Bu kombo setindeki saldýrýlarýn listesi
-    public List<ComboAttackData> attacks;
+    [Tooltip("Bu kombo zincirini oluþturan saldýrýlarýn sýrasý.")]
+    public List<AttackData> comboSequence;
 }

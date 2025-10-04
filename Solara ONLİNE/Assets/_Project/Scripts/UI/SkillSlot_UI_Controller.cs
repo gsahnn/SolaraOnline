@@ -1,45 +1,48 @@
-// SkillSlot_UI_Controller.cs
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
 public class SkillSlot_UI_Controller : MonoBehaviour
 {
-    [SerializeField] private Image skillIcon;
-    [SerializeField] private Image cooldownOverlay;
+    [SerializeField] private Image iconImage;
+    [SerializeField] private Image cooldownOverlay; // Cooldown'u göstermek için dairesel Image
     [SerializeField] private TextMeshProUGUI cooldownText;
 
-    // Bu slotu, belirli bir SkillSlot verisiyle günceller.
-    public void UpdateSlot(SkillSlot skillSlot)
+    private SkillSlot currentSkillSlot;
+
+    public void UpdateSlotUI(SkillSlot skillSlot)
     {
-        // Yetenek var mý?
-        if (skillSlot != null && skillSlot.skillData != null)
+        currentSkillSlot = skillSlot;
+
+        if (currentSkillSlot == null || currentSkillSlot.skillData == null)
         {
-            skillIcon.enabled = true;
-            skillIcon.sprite = skillSlot.skillData.icon;
+            // Eðer slot boþsa, her þeyi gizle.
+            iconImage.enabled = false;
+            cooldownOverlay.enabled = false;
+            cooldownText.enabled = false;
+            return;
+        }
 
-            // Bekleme süresinde mi?
-            if (skillSlot.IsOnCooldown())
-            {
-                cooldownOverlay.enabled = true;
-                cooldownText.enabled = true;
+        // --- DÜZELTME 1: 'icon' yerine 'skillIcon' kullanýlýyor. ---
+        iconImage.sprite = currentSkillSlot.skillData.skillIcon;
+        iconImage.enabled = true;
 
-                // Dolum efektini ayarla (0 ile 1 arasýnda bir deðer)
-                cooldownOverlay.fillAmount = skillSlot.cooldownTimer / skillSlot.skillData.cooldown;
-                // Kalan süreyi yazdýr (örn: 3.2s -> "3", 0.8s -> "1")
-                cooldownText.text = Mathf.CeilToInt(skillSlot.cooldownTimer).ToString();
-            }
-            else
-            {
-                // Bekleme süresi bittiyse görselleri kapat.
-                cooldownOverlay.enabled = false;
-                cooldownText.enabled = false;
-            }
+        // --- DÜZELTME 2: 'cooldownTimer'a doðrudan eriþmek yerine public fonksiyon kullanýlýyor. ---
+        if (currentSkillSlot.IsOnCooldown())
+        {
+            cooldownOverlay.enabled = true;
+            cooldownText.enabled = true;
+
+            // 'fillAmount' 0 ile 1 arasýnda bir deðer alýr. Bu fonksiyon tam olarak bunu yapar.
+            cooldownOverlay.fillAmount = currentSkillSlot.GetCooldownProgress();
+            // Kalan süreyi göstermek için (opsiyonel)
+            // cooldownText.text = Mathf.Ceil(currentSkillSlot.cooldownTimer).ToString(); // Bu hala private olduðu için çalýþmaz.
+            // Bunun yerine, SkillSlot'a yeni bir public fonksiyon ekleyebilir veya UI'da sadece overlay'i gösterebiliriz.
+            // Þimdilik sadece overlay'i gösterelim, en temiz çözüm.
+            cooldownText.enabled = false; // Veya kalan süreyi göstermek için SkillSlot'a public bir getter ekle.
         }
         else
         {
-            // Slotta yetenek yoksa her þeyi gizle.
-            skillIcon.enabled = false;
             cooldownOverlay.enabled = false;
             cooldownText.enabled = false;
         }
